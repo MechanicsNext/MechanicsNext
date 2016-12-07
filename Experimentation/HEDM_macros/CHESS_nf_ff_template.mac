@@ -1,0 +1,672 @@
+# TENSION/COMPRESSION NEAR FIELD, FAR FIELD TEMPLATE
+#    December 2015, Harshad Paranjape, Peter Ko, Darren Dale
+#    hparanja@mines.edu
+
+############################################################################
+
+# GLOBAL VARIABLES
+# Simulation mode
+#    0 = perform real scans
+#    1 = do not perform nf/ff measurements
+#    2 = 1 + do not load/unload/dic
+SIMULATION_MODE = 1
+
+# Load threshold (N).
+# Loading will be suspended if load cell reading exceeds THRESH
+THRESH = 1200
+
+# Omega angle at which DIC images are captured
+DIC_OME = 181.4522
+# Z displacement at which images are qcquired
+DIC_Z  = 0
+# DIC image exposure time (s)
+DIC_EXPTIME = 0.02
+
+# Cross-head displacement step for displacement control loading
+CROSSHEAD_DISPINC = 0.001
+# Rate (units??)
+CROSSHEAD_RATE = 0.001
+# Acceleration (units??)
+CROSSHEAD_ACC = 0.001
+
+# Number of dark images to take for far-field
+FF_NDARKS = 4
+# FF exposure time (s)
+FF_EXPTIME = 0.25
+# Coarse attenuation
+FF_ATT = 7
+# Fine attenuation
+# 1 fine att = 0.25 coarse att, except that first 2 fine slots are empty
+FF_ATTF = 0
+# Number of FF images in a 360 degree sweep
+FF_NIMAGES = 3600
+# Beam height (micron)
+FF_SLIT = 0.500
+
+# Near-field exposure time (s)
+NF_EXPTIME = 6
+# For FF, we always set attenuation to 0
+NF_ATT = 0
+NF_ATTF = 0
+# Number of NF images in a 360 degree sweep
+NF_NIMAGES = 720
+# Beam height (micron)
+NF_SLIT = 0.125
+############################################################################
+
+# UTILITY FUNCTIONS
+
+# Ask to do a NF scan
+def do_nf_scan_maybe '{
+    if ($1 || yesno("do you want to do a near-field scan?", 0)) {
+        
+        sync_ff_off
+        sync_nf_on
+        umv att NF_ATT
+        umv attf NF_ATTF
+	umv s1t NF_SLIT 
+	umv s1b NF_SLIT
+	auto_set_ic_gains
+	watt
+	ws1
+        
+        comment "=== near-field scan ==="
+	
+	if(SIMULATION_MODE < 1) {
+            slew_ome 0 360 NF_NIMAGES NF_EXPTIME
+	}
+    }
+}'
+
+# Do a NF scan. No questions asked.
+def do_nf_scan '{
+    
+    sync_ff_off
+    sync_nf_on
+    umv att NF_ATT
+    umv attf NF_ATTF
+    umv s1t NF_SLIT 
+    umv s1b NF_SLIT
+    auto_set_ic_gains
+    watt
+    ws1
+        
+    comment "=== near-field scan ==="
+
+    if(SIMULATION_MODE < 1) {
+        slew_ome 0 360 NF_NIMAGES NF_EXPTIME
+    }
+
+}'
+
+# Do a near field scan in layers
+#     do_nf_scan_layers 4 .25
+#     Does a scan with 4 layers and a layer thickness of 0.25 mm
+#     Do not forget to set NF_SLIT, NF_ATT, NF_ATTF etc.
+def do_nf_scan_layers '{
+
+    local j nlayers layersize
+
+    nlayers = $1
+    layersize = $2
+    
+    sync_ff_off
+    sync_nf_on
+    umv att NF_ATT
+    umv attf NF_ATTF
+    umv s1t NF_SLIT 
+    umv s1b NF_SLIT
+    auto_set_ic_gains
+    watt
+    ws1
+        
+    comment "=== near-field scan ==="
+
+    for (j=0; j<nlayers; j++) {
+	comment "=== Processing layer %g ==" "j+1"
+	umv ramsz (layersize*(-(nlayers/2)+1/2+j)+DIC_Z)
+
+        if(SIMULATION_MODE < 1) {
+	    slew_ome 0 360 NF_NIMAGES NF_EXPTIME	    
+        }
+    }
+}'
+
+# Check if the load has exceeded the TRESHold and abort loading if yes.
+def check_thresh '{
+    if (_wm_force() > THRESH) {
+        comment "=== stopping load, reached threshold ==="
+        mv_screw_abort
+        break
+    }
+}'
+
+# Check if we are going in compression and abort loading if yes.
+def check_zero_tension '{
+    if (_wm_force() < 0) {
+        mv_screw_abort
+        break
+    }
+}'
+
+# Check if we are going in tension and abort loading if yes.
+def check_zero_compression '{
+    if (_wm_force() > 0) {
+        mv_screw_abort
+        break
+    }
+}'
+
+# Check if we are in compression and if yes, load until we go in small tension
+def check_zero_tension_disp '{
+    if (_wm_force() < 0) {
+        mv_screw_abort
+        while (_wm_force() < 5) {
+            mvr_screw 0.001 1 0.001 0.001
+        }
+        break
+    }
+}'
+
+# Check if we are in tension and if yes, load until we go in small compression
+def check_zero_compression_disp '{
+    if (_wm_force() > 0) {
+        mv_screw_abort
+        while (_wm_force() > 5) {
+            mvr_screw -0.001 1 0.001 0.001
+        }
+        break
+    }
+}'
+
+# Do a far-field scan in layers
+#     do_ffscan_layers 2 0.5
+#     This will perform FF scans on 2 layers with 0.5 mm layer thickness.
+#     Do not forget to set FF_SLIT, FF_ATT, FF_ATTF etc.
+def do_ffscan_layers '{
+    local j nlayers layersize
+
+    nlayers = $1
+    layersize = $2
+
+    comment "=== beginning ff/load series ==="
+
+    # open_garage_door
+    umv att FF_ATT
+    umv attf FF_ATTF
+    umv s1t FF_SLIT 
+    umv s1b FF_SLIT
+    auto_set_ic_gains
+    sync_nf_off
+    sync_ff_on
+    
+    watt
+    ws1
+
+    for (j=0; j<nlayers; j++) {
+	comment "=== Processing layer %g ==" "j+1"
+	umv ramsz (layersize*(-(nlayers/2)+1/2+j)+DIC_Z)
+
+        if(SIMULATION_MODE < 1) {
+	    slew_ome 0 360 3600 FF_EXPTIME	    
+        }
+    }
+    umv ome DIC_OME
+    umv ramsz DIC_Z
+    comment "force=%g, displacement=%g" "_wm_force(), _wm_screw()"
+    dic_exposure DIC_EXPTIME 1
+    comment "=== Taking dark images ="
+    close_garage_door
+
+    if(SIMULATION_MODE < 1) {
+        slew_ome 0 1 FF_NDARKS FF_EXPTIME
+    }
+
+    open_garage_door
+}'
+
+# 
+def do_disp_step_tension '{
+    local s1 f1 nsteps start_pos target_pos step i j nlayers layersize nfscanyn
+
+    s1 = $1
+    f1 = $2
+    nsteps = $3
+    nlayers = $4
+    layersize = $5
+    nfscanyn = $6
+
+    step = (f1-s1)/nsteps
+
+    comment "=== beginning ff/load series ==="
+    comment "=== moving in the tension direction ==="
+
+    umv att FF_ATT
+    umv attf FF_ATTF
+    umv s1t FF_SLIT 
+    umv s1b FF_SLIT
+    auto_set_ic_gains
+    sync_nf_off
+    sync_ff_on
+
+    watt
+    ws1
+
+    start_pos = _wm_screw()
+
+    for (i=0; i<nsteps; i++) {	
+        target_pos = start_pos + (i + 1) * step 
+        umv ome DIC_OME
+        umv ramsz DIC_Z
+        comment "displacing to %g mm at %g mm/s" "target_pos, CROSSHEAD_RATE"
+        mv_screw target_pos 0 CROSSHEAD_RATE CROSSHEAD_ACC
+        comment "force=%g, displacement=%g" "_wm_force(), _wm_screw()"
+        dic_exposure DIC_EXPTIME 1
+        while (fabs(_wm_screw() - target_pos) > 0.001) {
+            comment "force=%g, displacement=%g" "_wm_force(), _wm_screw()"
+            dic_exposure DIC_EXPTIME 1
+            check_thresh
+            # only triggers when unloading:
+            # check_zero_tension_disp
+        }
+        # need to break out of the for loop as well:
+        # check_zero_tension_disp
+        for (j=0; j<nlayers; j++) {
+	    comment "=== Processing layer %g ==" "j+1"
+	    umv ramsz (layersize*(-(nlayers/2)+1/2+j)+DIC_Z)
+
+            if(SIMULATION_MODE < 1) {
+	        slew_ome 0 360 3600 FF_EXPTIME	    
+            }
+	}
+        umv ome DIC_OME
+        umv ramsz DIC_Z
+        comment "force=%g, displacement=%g" "_wm_force(), _wm_screw()"
+        dic_exposure DIC_EXPTIME 1
+        comment "=== Taking dark images ="
+        close_garage_door
+
+        if(SIMULATION_MODE < 1) {
+            slew_ome 0 1 FF_NDARKS FF_EXPTIME
+        }
+
+        open_garage_door
+    }
+    if (nfscanyn > 0) {
+        if (nfscanyn > 1){
+            do_nf_scan_layers 4 .25
+        }
+        else {
+            do_nf_scan_maybe 1
+        }
+    }
+}'
+
+def do_disp_step_compression '{
+    local s1 f1 nsteps start_pos target_pos step i j nlayers layersize nfscanyn
+
+    s1 = $1
+    f1 = $2
+    nsteps = $3
+    nlayers = $4
+    layersize = $5
+    nfscanyn = $6
+
+    step = (f1-s1)/nsteps
+
+    comment "=== beginning ff/load series ==="
+    comment "=== moving in the compression direction ==="
+
+#    while (yesno("did you remove the shield?", 0) == 0) {continue}
+
+    umv att FF_ATT
+    umv attf FF_ATTF
+    umv s1t FF_SLIT 
+    umv s1b FF_SLIT
+    auto_set_ic_gains
+    sync_nf_off
+    sync_ff_on
+
+    watt
+    ws1
+
+    start_pos = _wm_screw()
+
+    for (i=0; i<nsteps; i++) {	
+        target_pos = start_pos + (i + 1) * step 
+        umv ome DIC_OME
+        umv ramsz DIC_Z
+        comment "displacing to %g mm at %g mm/s" "target_pos, CROSSHEAD_RATE"
+        mv_screw target_pos 0 CROSSHEAD_RATE CROSSHEAD_ACC
+        comment "force=%g, displacement=%g" "_wm_force(), _wm_screw()"
+        dic_exposure DIC_EXPTIME 1
+        while (fabs(_wm_screw() - target_pos) > 0.001) {
+            comment "force=%g, displacement=%g" "_wm_force(), _wm_screw()"
+            dic_exposure DIC_EXPTIME 1
+            check_thresh
+            # only triggers when unloading:
+            # check_zero_compression_disp
+        }
+        # need to break out of the for loop as well:
+        # check_zero_compression_disp
+        for (j=0; j<nlayers; j++) {
+	    comment "=== Processing layer %g ==" "j+1"
+	    umv ramsz (layersize*(-(nlayers/2)+1/2+j)+DIC_Z)
+
+            if(SIMULATION_MODE < 1) {
+	        slew_ome 0 360 3600 FF_EXPTIME	    
+            }
+	}
+        umv ome DIC_OME
+        umv ramsz DIC_Z
+        comment "force=%g, displacement=%g" "_wm_force(), _wm_screw()"
+        dic_exposure DIC_EXPTIME 1
+        comment "=== Taking dark images ="
+        close_garage_door
+
+        if(SIMULATION_MODE < 1) {
+            slew_ome 0 1 FF_NDARKS FF_EXPTIME
+        }
+        open_garage_door
+    }
+    if (nfscanyn > 0){
+        if (nfscanyn > 1){
+            do_nf_scan_layers 4 .25
+	}
+        else {
+            do_nf_scan_maybe 1
+        }
+    }
+}'
+
+def do_unload_step_comp '{
+    local nsteps start_load start_pos target_load target_pos step i j nlayers layersize
+
+    nsteps = $1
+    nlayers = $2
+    layersize = $3
+
+    start_load = _wm_force()
+    start_pos = _wm_screw()
+
+    step = -start_load/nsteps
+    target_pos = start_pos - int(start_load)*CROSSHEAD_RATE
+
+    comment "=== returning to zero load ==="
+
+    umv att FF_ATT
+    umv attf FF_ATTF
+    umv s1t FF_SLIT 
+    umv s1b FF_SLIT
+    auto_set_ic_gains
+    sync_nf_off
+    sync_ff_on
+
+    watt
+    ws1
+
+    for (i=0; i<nsteps; i++) {	
+        target_load = start_load + (i + 1) * step 
+        umv ome DIC_OME
+        umv ramsz DIC_Z
+        comment "unloading to %g N at %g mm/s" "target_load, CROSSHEAD_RATE"
+
+	mv_screw target_pos 0 CROSSHEAD_RATE CROSSHEAD_ACC
+	while ((_wm_force()-target_load) < 0) {
+		check_zero_compression
+    		comment "force=%g, displacement=%g" "_wm_force(), _wm_screw()"
+    		dic_exposure DIC_EXPTIME 1
+	}
+	# stop moving:
+	mv_screw _wm_screw()
+
+
+	comment "force=%g, displacement=%g" "_wm_force(), _wm_screw()"
+	umv ome DIC_OME
+	umv ramsz DIC_Z
+	dic_exposure DIC_EXPTIME 1
+
+	for (j=0; j<nlayers; j++) {
+	    comment "=== Processing layer %g ==" "j+1"
+	    umv ramsz (layersize*(-(nlayers/2)+1/2+j)+DIC_Z)
+
+            if(SIMULATION_MODE < 1) {
+	        slew_ome 0 360 3600 FF_EXPTIME	    
+            }
+	}
+
+	umv ome DIC_OME
+	umv ramsz DIC_Z
+	comment "force=%g, displacement=%g" "_wm_force(), _wm_screw()"
+	dic_exposure DIC_EXPTIME 1
+
+	comment "=== Taking dark images ="
+	close_garage_door
+
+        if(SIMULATION_MODE < 1) {
+	    slew_ome 0 1 FF_NDARKS FF_EXPTIME
+        }
+
+	open_garage_door
+
+    }
+}'
+
+def do_unload_step_tens '{
+    local nsteps start_load start_pos target_load target_pos step i j nlayers layersize
+
+    nsteps = $1
+    nlayers = $2
+    layersize = $3
+
+    start_load = _wm_force()
+    start_pos = _wm_screw()
+
+    step = -start_load/nsteps
+    target_pos = start_pos - int(start_load)*CROSSHEAD_RATE
+
+    comment "=== returning to zero load ==="
+
+    umv att FF_ATT
+    umv attf FF_ATTF
+    umv s1t FF_SLIT 
+    umv s1b FF_SLIT
+    auto_set_ic_gains
+    sync_nf_off
+    sync_ff_on
+
+    watt
+    ws1
+
+    for (i=0; i<nsteps; i++) {	
+        target_load = start_load + (i + 1) * step 
+        umv ome DIC_OME
+        umv ramsz DIC_Z
+        comment "unloading to %g N at %g mm/s" "target_load, CROSSHEAD_RATE"
+
+	mv_screw target_pos 0 CROSSHEAD_RATE CROSSHEAD_ACC
+	while ((_wm_force()-target_load) > 0) {
+		check_zero_tension
+    		comment "force=%g, displacement=%g" "_wm_force(), _wm_screw()"
+    		dic_exposure DIC_EXPTIME 1
+	}
+	# stop moving:
+	mv_screw _wm_screw()
+
+	comment "force=%g, displacement=%g" "_wm_force(), _wm_screw()"
+	umv ome DIC_OME
+	umv ramsz DIC_Z
+	dic_exposure DIC_EXPTIME 1
+
+	for (j=0; j<nlayers; j++) {
+	    comment "=== Processing layer %g ==" "j+1"
+	    umv ramsz (layersize*(-(nlayers/2)+1/2+j)+DIC_Z)
+
+            if(SIMULATION_MODE < 1) {
+	        slew_ome 0 360 3600 FF_EXPTIME	    
+            }
+	}
+
+	umv ome DIC_OME
+	umv ramsz DIC_Z
+	comment "force=%g, displacement=%g" "_wm_force(), _wm_screw()"
+	dic_exposure DIC_EXPTIME 1
+
+	comment "=== Taking dark images ="
+	close_garage_door
+
+        if(SIMULATION_MODE < 1) {
+	    slew_ome 0 1 FF_NDARKS FF_EXPTIME
+        }
+
+	open_garage_door
+
+    }
+}'
+
+# Tension cycle
+# # ---- Perform NF scan at the start -----
+# comment "=== Doing initial NF scan =="
+# do_nf_scan_layers 4 .25
+
+# comment "=== STARTING tension cycle =="
+#---- Do an initial far field scan (nlayers layersize) ----
+#comment "=== Doing initial FF scan =="
+#do_ffscan_layers 1 1
+
+# ---- move in displacement control, tension direction, in relative displacement ----
+# ---- (startdisp enddisp nsteps nlayers layersize nfscanyn) ----
+# ---- set nfscanyn = 2 to do nfscan at end of movement ---
+# ---- set nfscanyn = 1 to ask for nfscan at end of movement ---
+# ---- set nfscanyn = 0 for no nfscan ----
+
+comment "=== Doing stage 1 load tension in 4 steps =="
+
+#FF_ATT = 7
+#FF_ATTF = 0
+#comment "=== Coarse attenuation currently set to %g ==" "FF_ATT"
+#comment "=== Fine attenuation currently set to %g ==" "FF_ATTF"
+#FF_ATT = getval("Set coarse attenuation to", FF_ATT)
+#FF_ATTF = getval("Set fine attenuation to", FF_ATTF)
+
+do_disp_step_tension 0.0 0.12 4 1 1 0
+
+comment "=== Doing stage 2 load tension in 1 steps =="
+
+FF_ATT = 7
+FF_ATTF = 0
+comment "=== Coarse attenuation currently set to %g ==" "FF_ATT"
+comment "=== Fine attenuation currently set to %g ==" "FF_ATTF"
+FF_ATT = getval("Set coarse attenuation to", FF_ATT)
+FF_ATTF = getval("Set fine attenuation to", FF_ATTF)
+
+do_disp_step_tension 0.12 0.24 2 1 1 0
+
+comment "=== Doing stage 3 load tension in 6 steps =="
+
+FF_ATT = 7
+FF_ATTF = 0
+comment "=== Coarse attenuation currently set to %g ==" "FF_ATT"
+comment "=== Fine attenuation currently set to %g ==" "FF_ATTF"
+FF_ATT = getval("Set coarse attenuation to", FF_ATT)
+FF_ATTF = getval("Set fine attenuation to", FF_ATTF)
+
+do_disp_step_tension 0.24 0.40 6 1 1 0
+
+#comment "=== Doing NF scan at peak tension =="
+#do_nf_scan_layers 4 .25
+
+# If something goes wrong and NF data is not saved,
+# use the 12 lines below (uncomment)
+#comment "=== Manual NF scans at peak load =="
+#umv ramsz -0.3750
+#slew_ome 0 360 720 6
+
+#umv ramsz -0.1250
+#slew_ome 0 360 720 6
+
+#umv ramsz 0.1250
+#slew_ome 0 360 720 6
+
+#umv ramsz 0.3750
+#slew_ome 0 360 720 6
+
+# move in displacement control, compression direction, in relative displacement
+# (startdisp enddisp nsteps nlayers layersize, nfscanyn)
+
+comment "=== Doing stage 4 unload tension in 2 steps =="
+
+comment "=== Coarse attenuation currently set to %g ==" "FF_ATT"
+comment "=== Fine attenuation currently set to %g ==" "FF_ATTF"
+FF_ATT = getval("Set coarse attenuation to", FF_ATT)
+FF_ATTF = getval("Set fine attenuation to", FF_ATTF)
+
+do_disp_step_compression 0.40 0.24 2 1 1 0
+
+comment "=== Doing stage 5 unload tension in 2 steps =="
+
+FF_ATT = 7
+FF_ATTF = 0
+comment "=== Coarse attenuation currently set to %g ==" "FF_ATT"
+comment "=== Fine attenuation currently set to %g ==" "FF_ATTF"
+FF_ATT = getval("Set coarse attenuation to", FF_ATT)
+FF_ATTF = getval("Set fine attenuation to", FF_ATTF)
+
+do_disp_step_compression 0.24 0.12 2 1 1 0
+
+comment "=== Doing stage 6 unload tension in 2 steps =="
+
+FF_ATT = 7
+FF_ATTF = 0
+comment "=== Coarse attenuation currently set to %g ==" "FF_ATT"
+comment "=== Fine attenuation currently set to %g ==" "FF_ATTF"
+FF_ATT = getval("Set coarse attenuation to", FF_ATT)
+FF_ATTF = getval("Set fine attenuation to", FF_ATTF)
+
+do_disp_step_compression 0.12 0.00 2 1 1 0
+
+comment "=== END of tension cycle =="
+
+comment "=== STARTING compression cycle =="
+
+comment "=== Doing stage 7 load compression in 2 steps =="
+do_disp_step_compression 0.0 -0.12 2 1 1 0
+
+comment "=== Doing stage 8 load compression in 2 steps =="
+
+FF_ATT = 7
+FF_ATTF = 0
+comment "=== Coarse attenuation currently set to %g ==" "FF_ATT"
+comment "=== Fine attenuation currently set to %g ==" "FF_ATTF"
+FF_ATT = getval("Set coarse attenuation to", FF_ATT)
+FF_ATTF = getval("Set fine attenuation to", FF_ATTF)
+
+do_disp_step_compression -0.12 -0.24 2 1 1 0
+
+comment "=== Doing stage 9 load compression in 3 steps =="
+
+FF_ATT = 7
+FF_ATTF = 0
+comment "=== Coarse attenuation currently set to %g ==" "FF_ATT"
+comment "=== Fine attenuation currently set to %g ==" "FF_ATTF"
+FF_ATT = getval("Set coarse attenuation to", FF_ATT)
+FF_ATTF = getval("Set fine attenuation to", FF_ATTF)
+
+do_disp_step_compression -0.24 -0.48 3 1 1 0
+
+comment "=== Doing stage 10 unload compression in 2 steps =="
+do_disp_step_tension -0.48 -0.24 2 1 1 0
+
+comment "=== Doing stage 11 unload compression in 2 steps =="
+
+FF_ATT = 7
+FF_ATTF = 0
+comment "=== Coarse attenuation currently set to %g ==" "FF_ATT"
+comment "=== Fine attenuation currently set to %g ==" "FF_ATTF"
+FF_ATT = getval("Set coarse attenuation to", FF_ATT)
+FF_ATTF = getval("Set fine attenuation to", FF_ATTF)
+
+# unload in load control from current load (nsteps nlayers layersize nfscanyn)
+do_unload_step_comp 2 1 1 0
+
+comment "=== END of compression cycle =="
