@@ -8,7 +8,6 @@
 # Simulation mode
 #    0 = perform real scans
 #    1 = do not perform nf/ff measurements
-#    2 = 1 + do not load/unload/dic
 SIMULATION_MODE = 1
 
 # Load threshold (N).
@@ -55,6 +54,21 @@ NF_SLIT = 0.125
 ############################################################################
 
 # UTILITY FUNCTIONS
+
+# do_nf_scan_maybe
+# do_nf_scan
+# do_nf_scan_layers
+# check_thresh
+# check_zero_tension
+# check_zero_tension
+# check_zero_compression
+# check_zero_tension_disp
+# check_zero_compression_disp
+# do_ffscan_layers
+# do_disp_step_tension
+# do_disp_step_compression
+# do_unload_step_compression
+# do_unload_step_tension
 
 # Ask to do a NF scan
 #     do_nf_scan_maybe
