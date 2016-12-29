@@ -10,4 +10,4 @@ MechanicsNext is a framework to assist the discovery and elucidation of multi-sc
 3. Infrastructure: Tools in this class include utilities for pre-processing (HEDM) data, simulation of far-field HEDM diffraction patterns and tutorials for setting-up and using certain diffraction-related softwares on workstations and clusters.
 4. Teaching and Outreach: Resources in this section consist of software demonstrations of basic materials phenomena or methods (e.g. phase change, plasticity) and software-apps that are designed for external outreach.
 
-Requests for collaborations and general inquiries can be addressed to Harshad Paranjape at [mailto:harshad@Paranja.pe](harshad@Paranja.pe)
+Requests for collaborations can be addressed to Harshad Paranjape at [harshad@Paranja.pe](mailto:harshad@Paranja.pe). General inquiries can be made by opening an issue on this repo.
