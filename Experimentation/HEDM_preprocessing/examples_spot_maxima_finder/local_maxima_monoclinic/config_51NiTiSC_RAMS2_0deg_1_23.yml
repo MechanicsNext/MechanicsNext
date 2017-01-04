@@ -1,0 +1,50 @@
+analysis_name: 51NiTiSC_RAMS2_0deg_1_local_maxima # defaults to analysis
+
+## working directory defaults to current working directory
+## all relative paths specified herein are assumed to be in the working_dir
+## any files not in working_dir should be specified with an absolute path
+#working_dir: 
+
+multiprocessing: -1 # "all", or "half", or -1 means all but one, defaults to -1
+
+material:
+  definitions: material_niti
+  active: NiTi_mono
+
+image_series:
+  file:
+    stem: /media/beamteam/DIFFRACTION/CHESS/2015/51NiTiSC_RAMS2TC_0Deg_1/23/ff/ff_%05d.ge2 # can include relative or absolute path
+    ids: [1203, 1204, 1205, 1206, 1207] # or can use globs: ["*2[4-9]"]
+  images:
+    start: 1
+    stop: 3600
+    step: 1
+  omega:
+    start: 0.0
+    step: 0.1
+    stop: 360.0
+  dark: /media/beamteam/DIFFRACTION/CHESS/2015/51NiTiSC_RAMS2TC_0Deg_1/22/ff/ff_01202.ge2
+  flip: ~ # ~, v, h, hv, vh, cw, ccw
+
+instrument:
+  parameters: ge_detector.yml
+  detector: # this section is only needed to convert old files to the new spec
+    parameters_old: detector_61p332_CHESS_15_june_APS_cal_refined # the old detector spec, produced by the GUI
+    pixels: # this section required to convert from old detector spec
+      rows: 2048
+      columns: 2048
+      size: [0.200, 0.200] # [row height, col width] mm
+
+pre_processing:
+  ge_reader_threshold: 20          # Anything less than this will be set to zero on reading GE2 file
+  radial_threshold: 1000           # Radial distance from center. The spots outside this distance will not be processed
+  min_blob_size: 25                # Blob containing less than these pixels will be discarded
+  min_peak_separation: 2           # Minimum separation between local maxima
+  upper_intensity_threshold: 14000 # Peaks brighter than this value will not be printed to the GE files
+  print_spots_info: true           # Print omega, x, y and intensity for the local maxima found
+  print_ge: false                  # If true, GE2 files will be written to disk (pretty slow for now)
+  print_diag_images: false         # Print diagnostic PNGs with local maxima overlaid on intensity etc
+  radius_gray_dilation_omega: 2    # When writing GE2 files, spot will be dilated by these pixels in omega
+  radius_gray_dilation_x: 2        # When writing GE2 files, spot will be dilated by these pixels in x 
+  radius_gray_dilation_y: 2        # When writing GE2 files, spot will be dilated by these pixels in y
+

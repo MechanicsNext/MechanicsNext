@@ -1,0 +1,56 @@
+analysis_name: 51NiTiSC_0D_4 # defaults to analysis
+
+## working directory defaults to current working directory
+## all relative paths specified herein are assumed to be in the working_dir
+## any files not in working_dir should be specified with an absolute path
+#working_dir: 
+
+multiprocessing: -1 # "all", or "half", or -1 means all but one, defaults to -1
+
+material:
+  definitions: material_niti
+  active: NiTi_cubic
+
+image_series:
+  file:
+    stem: /media/beamteam/DIFFRACTION/CHESS/2015_Dec/51NiTiSC_0D_4/8/ff/ff_%05d.ge2 # can include relative or absolute path
+    ids: [82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96] # or can use globs: ["*2[4-9]"]
+  images:
+    start: 1
+    stop: 3600
+    step: 1
+  omega:
+    start: 0.0
+    step: 0.1
+    stop: 360.0
+  dark: /media/beamteam/DIFFRACTION/CHESS/2015_Dec/51NiTiSC_0D_4/9/ff/ff_00097.ge2
+  flip: h # ~, v, h, hv, vh, cw, ccw
+
+instrument:
+  parameters: ge_detector.yml
+  detector: # this section is only needed to convert old files to the new spec
+    parameters_old: detector_55p618_avg_CHESS_15_dec_APS_cal # the old detector spec, produced by the GUI
+    pixels: # this section required to convert from old detector spec
+      rows: 2048
+      columns: 2048
+      size: [0.200, 0.200] # [row height, col width] mm
+
+# Forward modeling module: Generate synthetic microstructure data (X, Y, Z, material, orientation, strain)
+# or read microstructure data from user and synthesize simulated diffraction patterns (X, Y, Omega in TXT and GE2 files)
+forward_modeling:
+  modeling_mode: fwdmodel              # datagen OR fwdmodel. datagen generates random NiTi_cubic data. fwdmodel does actual fwd modeling
+  datagen:
+    number_of_points: 10000            # Number of microstructure points to generate (1000 is fast, 1M is 10 minutes)
+    output_file_name: ms-data-test.csv # Output file name for syntheric microstructural data generated 
+    sample_size: 1000                  # Sample dimension in microns
+    defgrad_spread: 0.01               # This is essentiallt strain spread in a crystal (less than 0.1% or 0.001 is something reasonable)
+  fwdmodel:
+    input_file_name: ms-NiTi-A-poly.csv     # Input file from which X, Y, Z, material, orientation and strain info is read for fwdmodel
+    output_file_name: synth-data-NiTi-A-poly.out      # TXT file to which X, Y, Omega for synth spots is written for fwdmodel
+    output_ge: true                     # Write GE2 data or not.
+    output_ge_name: ff_synth_00000.ge2   # GE2 file name
+    output_omega:                        # Omega stepping in the GE2 file for fwdmodel
+      start: 0.0
+      step: 0.1
+      stop: 360.0
+
