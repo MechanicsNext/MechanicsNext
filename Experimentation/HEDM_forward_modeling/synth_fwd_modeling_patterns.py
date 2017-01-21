@@ -107,8 +107,17 @@ if __name__ == '__main__':
             ms.read_csv()
 	    # Obtain diffraction angles using routines implemented in heXRD
             ms.get_diffraction_angles()
+
+            try:
+                output_txt_flag = cfg.get('forward_modeling')['fwdmodel']['output_txt']
+            except:
+                output_txt_flag = False
+
+            if output_txt_flag is not False:
+                logger.info('Writing text output to %s', fwd_model_op_filename)
+
 	    # Project the two-theta, eta, omega angles to X, Y using heXRD detector routines.
-            ms.project_angs_to_detector(output_file=fwd_model_op_filename)
+            ms.project_angs_to_detector(output_txt=output_txt_flag, output_file=fwd_model_op_filename)
 
 	    try:
 	        output_ge2_flag = cfg.get('forward_modeling')['fwdmodel']['output_ge']
@@ -133,7 +142,16 @@ if __name__ == '__main__':
                     omega_step = 0.1
                     omega_stop = 360.0
 
-	        ms.write_xyo_to_ge2(output_ge2=output_ge2, omega_start=omega_start, omega_step=omega_step, omega_stop=omega_stop)
+
+                try:
+                    ge2_blur_sigma = cfg.get('forward_modeling')['fwdmodel']['ge2_blur_sigma']
+                except:
+                    ge2_blur_sigma = 3
+
+                logger.info('Writing GE2 output to %s', output_ge2)
+
+	        ms.write_xyo_to_ge2(output_ge2=output_ge2, omega_start=omega_start, omega_step=omega_step, omega_stop=omega_stop, ge2_blur_sigma=ge2_blur_sigma)
+                logger.info('Forward modeling COMPLETED')
 
         else:
             logger.error('Invalid forward modeling mode: %s. Choices are datagen and fwdmodel', fwd_model_mode)
