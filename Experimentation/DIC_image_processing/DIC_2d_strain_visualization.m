@@ -39,7 +39,7 @@ ylabel('Strain (xx)')
 %ylim([0 3e-3])
 %
 % Save an image sequence from 2d strain plots
-make_image_sequence = 1;
+make_image_sequence = 0;
 strain_limits = [0.0 0.12];
 plot_save_dir = '/Users/Harshad/Documents/Work/Research_data/HEDM_Study_of_Deformation_in_SMA/CHESS_2015_June_Steel/exx_2d';
 padding = 0.4; % Padding around the plot. 0 < padding < 0.2

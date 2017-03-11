@@ -1,4 +1,4 @@
-spec_file_dir = '/Users/Harshad/Documents/Work/Research_data/HEDM_Study_of_Deformation_in_SMA/CHESS_2015_December/results/50NiTiSC_0D_1/';
+spec_file_dir = '/Users/Harshad/Documents/Work/Research_data/HEA_HEDM_CHESS_2015/';
 spec_log_file_name = 'spec.log';
 cross_section_area = 1;
 
