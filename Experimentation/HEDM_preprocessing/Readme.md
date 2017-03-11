@@ -47,5 +47,5 @@ python MECHANICSNEXT_DIR/Experimentation/HEDM_preprocessing/spot_maxima_finder.p
 
 ##Basic algorithm
 
-<img src="https://github.com/MechanicsNext/MechanicsNext/blob/master/MeshnicsNext_Assets/Experimentation_HEDM_preprocessing_algorithm.png" width=600px>
+<img src="https://github.com/MechanicsNext/MechanicsNext/blob/master/MeshnicsNext_Assets/Experimentation_HEDM_preprocessing_algorithm.png" width=500px>
 
