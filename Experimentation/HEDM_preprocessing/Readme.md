@@ -10,8 +10,10 @@ radial separation.
 ###Prerequisites
 1. Linux system.
 2. Python. [Miniconda](https://conda.io/miniconda.html) distribution is recommended.
-3. The utility can consume large memory (~ 1 TB), depending on the number of spots in the data.
-4. Access to multiple processors will significantly speed-up the processing. Hence,
+3. heXRD package. See [installation instruction in the Wiki](https://github.com/MechanicsNext/MechanicsNext/wiki/heXRD-on-Stampede).
+4. NumPy, SciPy, and Scikit-learn packages.
+5. The utility can consume large memory (~ 1 TB), depending on the number of spots in the data.
+6. Access to multiple processors will significantly speed-up the processing. Hence,
 running this program on a workstation or a supercomputer (e.g., Stampede) is recommended.
 
 ###Installation steps
@@ -22,7 +24,7 @@ running this program on a workstation or a supercomputer (e.g., Stampede) is rec
 5. Make sure necessary GE2 data files, dark files, detector configuration file, and the material file are present at appropriate locations. Generally
 detector and material files are kept in the same folder as the configuration file.
 
-###Running the utility
+##Running the utility
 Run the utility using `python MECHANICSNEXT_DIR/Experimentation/HEDM_preprocessing/spot_maxima_finder.py config.yml`
 
 ###Running on Stampede supercomputer
@@ -41,5 +43,9 @@ the `largemem` queue must be used due to large memory requirements.
 #SBATCH -t 01:00:00         # max time
 
 python MECHANICSNEXT_DIR/Experimentation/HEDM_preprocessing/spot_maxima_finder.py config.yml
-``
-`
+```
+
+##Basic algorithm
+
+<img src="https://github.com/MechanicsNext/MechanicsNext/blob/master/MeshnicsNext_Assets/Experimentation_HEDM_preprocessing_algorithm.png" width=600px>
+
