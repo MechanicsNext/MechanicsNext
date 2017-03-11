@@ -94,6 +94,7 @@ def find_blobs_mp(ge_data, int_scale_factor, min_size, min_peak_separation, cfg)
    blob_centroids = []
    max_points_global = []
    roi_global = []
+   roi_maxima_global = [] 
    watershed_global = []
    watershed_pixel_count = []
    watershed_eigs = []
@@ -140,11 +141,14 @@ def find_blobs_mp(ge_data, int_scale_factor, min_size, min_peak_separation, cfg)
         labels = watershed(-roi, markers, mask=(roi>0.1*np.amax(roi)))
         roi_global.append(roi)
         watershed_global.append(labels)
+        roi_maxima = np.zeros_like(roi)
         # Get spot size and shape
         for max_x, max_y, max_z, max_id in zip(max_points[0], max_points[1], max_points[2],
                                                range(len(max_points[0]))):
            # Size = number of voxels with same watershed label
            watershed_pixel_count.append(np.sum(labels == max_id+1))
+           # Save the position of local maxima
+           roi_maxima[max_x][max_y][max_z] = 1
            # Shape = three eigenvalues (calculated using SVD)
            try:
               # The indices must be centered around the mean
@@ -164,6 +168,7 @@ def find_blobs_mp(ge_data, int_scale_factor, min_size, min_peak_separation, cfg)
 	      watershed_eigv.append([0., 0., 0., 0., 0., 0., 0., 0., 0.])
 
         # Done watershed
+        roi_maxima_global.append(roi_maxima)
 
         # This looks like a legit spot. Add to blobs array
         blobs.append(GEBlob(slice_x, slice_y, slice_z, label_num, blob_size, max_points))
@@ -178,7 +183,8 @@ def find_blobs_mp(ge_data, int_scale_factor, min_size, min_peak_separation, cfg)
            'watershed' : watershed_global,
            'watershed_pixel_count': watershed_pixel_count,
            'watershed_eigs': watershed_eigs,
-	   'watershed_eigv': watershed_eigv}
+	   'watershed_eigv': watershed_eigv,
+           'local_maxima':roi_maxima_global}
 #--
 
 # A blob is a set of pixels in an image that are connected to each other
@@ -321,11 +327,12 @@ class GEPreProcessor:
            for blob_i in blobs_mp_output_i['blobs']:
               blobs.append(blob_i)
            #
-           for roi_i, watershed_i in zip(blobs_mp_output_i['roi'], blobs_mp_output_i['watershed']):
+           for roi_i, watershed_i, local_maxima_i in zip(blobs_mp_output_i['roi'], blobs_mp_output_i['watershed'], blobs_mp_output_i['local_maxima']):
               # Print diagnostic images for roi, watershed
               if cfg.get('pre_processing')['print_diag_images']:
                  write_image('watershed' + str(roi_counter) + '.png', np.amax(watershed_i, axis=0), vmin=0)
                  write_image('roi' + str(roi_counter) + '.png', np.amax(roi_i, axis=0), vmin=0)
+                 write_image('local_max' + str(roi_counter) + '.png', np.amax(local_maxima_i, axis=0), vmin=0)
                  roi_counter += 1
               
            for maxima_info, spot_size_i, spot_eigs_i, spot_eigv_i in zip(blobs_mp_output_i['local_maxima'], blobs_mp_output_i['watershed_pixel_count'], blobs_mp_output_i['watershed_eigs'], blobs_mp_output_i['watershed_eigv']):
