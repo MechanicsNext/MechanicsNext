@@ -1,4 +1,5 @@
-<img src="https://github.com/MechanicsNext/MechanicsNext/blob/master/MeshnicsNext_Assets/mechanics_next_wordmark.png" width=64px> #MechanicsNext
+<img src="https://github.com/MechanicsNext/MechanicsNext/blob/master/MeshnicsNext_Assets/mechanics_next_wordmark.png" width=64px>
+#MechanicsNext
 
 Mechanics of Materials Using Numerical and Experimental Techniques.
 
