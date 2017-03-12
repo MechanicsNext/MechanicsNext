@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# Sample Stampede supercomputer job file for ff-HEDM spot segmentation utility
+# More details at https://github.com/MechanicsNext/MechanicsNext/tree/master/Experimentation/HEDM_preprocessing
+
+#SBATCH -J SEGMNT          # Job name
+#SBATCH -o SEGMNT.%j.out   # stdout; %j expands to jobid
+#SBATCH -e SEGMNT.%j.err   # stderr; skip to combine stdout and stderr
+#SBATCH -p largemem        # queue
+#SBATCH -N 1               # Number of nodes, not cores (16 cores/node)
+#SBATCH -n 32              # Total number of MPI tasks (if omitted, n=N)
+#SBATCH -t 01:00:00        # max time
+
+# Run the code
+python /MECHNICSNEXT_DIR/Experimentation/HEDM_preprocessing/spot_maxima_finder.py config_local_maxima_cubic_monoclinic_mixed.yml

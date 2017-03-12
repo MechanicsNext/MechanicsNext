@@ -1,3 +1,0 @@
-#!/bin/bash
-
-python ../../spot_maxima_finder.py config_51NiTiSC_RAMS2_0deg_1_23.yml

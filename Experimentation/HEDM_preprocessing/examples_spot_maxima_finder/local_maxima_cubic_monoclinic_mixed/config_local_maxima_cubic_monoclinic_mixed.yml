@@ -1,0 +1,50 @@
+analysis_name: local_maxima_cubic_monoclinic_mixed # defaults to analysis
+
+## working directory defaults to current working directory
+## all relative paths specified herein are assumed to be in the working_dir
+## any files not in working_dir should be specified with an absolute path
+# working_dir: 
+
+multiprocessing: -1 # "all", or "half", or -1 means all but one, defaults to -1
+
+material:
+  definitions: material_local_maxima_cubic_monoclinic_mixed       # Material file in heXRD format
+  active: NiTi_mono                                               # Name of the active material
+
+image_series:
+  file:
+    stem: /FULL/PATH/TO/RAW/FFHEDM/DATA/ff_%05d.ge2               # Absolute path in the stem is recommended
+    ids: [1, 2, 3, 4, 5]                                          # These numbers will be substituted in the stem to produce ff_00001.ge2 etc.
+  images:
+    start: 1                                                      # Number of the 1st frame in the GE2/GE3 files
+    stop: 3600                                                    # Number of the last frame in the GE2/GE3 files
+    step: 1                                                       # step in frame numbers (typically 1)
+  omega:
+    start: 0.0                                                    # Omega of the first frame
+    step: 0.1                                                     # Step in omega. Should be consistent with the number of frames above.
+    stop: 360.0                                                   # Omega of the last frame
+  dark: /FULL/PATH/TO/DARK/FFHEDM/FILE//ff_00010.ge2              # Dark file (used to remove background from the raw data)
+  flip: ~                                                         # Detector flip: ~, v, h, hv, vh, cw, ccw
+
+instrument:
+  parameters: ge_detector.yml
+  detector:                                                       # We need this section because we are using the old detector file spec.
+    parameters_old: detector_local_maxima_cubic_monoclinic_mixed  # the old detector spec, produced by the GUI
+    pixels:
+      rows: 2048
+      columns: 2048
+      size: [0.200, 0.200]                                        # [row height, col width] mm
+
+pre_processing:
+  ge_reader_threshold: 20                                         # Anything less than this threshold will be set to zero on reading GE2 file
+  radial_threshold: 350                                           # Radial distance from center. The spots outside this distance will not be processed
+  min_blob_size: 25                                               # Blob containing less than these pixels will be discarded
+  min_peak_separation: 2                                          # Minimum separation between local maxima
+  upper_intensity_threshold: 300                                  # Peaks brighter than this value will not be printed to the GE2/3 files. Useful for separating bright/weak phases.
+  print_spots_info: true                                          # Print the local maxima omega, x, y, and intensity to a text file
+  print_ge: true                                                  # Write the segmented data to a GE2 file to disk (can be slow if I/O is slow)
+  print_diag_images: false                                        # Print diagnostic PNGs with local maxima overlaid on intensity etc
+  radius_gray_dilation_omega: 2                                   # When writing GE2 files, spots will be dilated by these pixels in omega
+  radius_gray_dilation_x: 2                                       # When writing GE2 files, spots will be dilated by these pixels in x 
+  radius_gray_dilation_y: 2                                       # When writing GE2 files, spots will be dilated by these pixels in y
+
