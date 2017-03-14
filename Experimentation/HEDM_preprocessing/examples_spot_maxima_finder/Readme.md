@@ -1,9 +1,9 @@
 <img src="https://github.com/MechanicsNext/MechanicsNext/blob/master/MeshnicsNext_Assets/mechanics_next_wordmark.png" width=64px>
-#Far-field High-energy Diffraction Microscopy Spot Segmentation Utility: Examples
+# Far-field High-energy Diffraction Microscopy Spot Segmentation Utility: Examples
 
 These examples can be used as templates to run spot segmentation on other datasets.
 
-##local_maxima_cubic_monoclinic_mixed
+## local_maxima_cubic_monoclinic_mixed
 
 An example showing spot segmentation in a two-phase material. The spots from the cubic phase
 are significantly brighter than the spots from the monoclinic phase. Thus an upper
