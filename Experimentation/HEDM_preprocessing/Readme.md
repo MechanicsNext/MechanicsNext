@@ -1,4 +1,5 @@
 <img src="https://github.com/MechanicsNext/MechanicsNext/blob/master/MeshnicsNext_Assets/mechanics_next_wordmark.png" width=64px>
+
 # Far-field High-energy Diffraction Microscopy Spot Segmentation Utility
 
 A utility to read raw GE2 or GE3 files obtained during a [far-field high-energy diffraction microscopy](https://pdfs.semanticscholar.org/0c56/6a8040f5d60674063d41a3628b1da8d5270a.pdf) (ff-HEDM) experiment and segment the spots
