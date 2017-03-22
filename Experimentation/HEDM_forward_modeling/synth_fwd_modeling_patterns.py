@@ -1,9 +1,14 @@
 ###############################################################################
-# Diffraction-toolkit (https://github.com/hmparanjape/diffraction-toolkit)
-# HEDM Forward Modeling Library
+# MechanicsNext: ff-HEDM Spot Segmentation Program
+# (https://github.com/MechanicsNext/MechanicsNext/blob/master/Experimentation/HEDM_preprocessing/)
 #
-# Either generate a synthetic microstructure or simulate HEDM patterns
-# from the microstructural data provided by the user.
+# Simulate far-field high-energy diffraction microscopy patterns from
+# the microstructural data provided.
+#
+# USAGE:
+#  python synth_fwd_modeling_patterns.py config_file.yml
+#
+# See examples_synth_fwd_modeling_patterns/ folder for example configurations.
 #
 # Written by Harshad Paranjape (hparanja@mines.edu) and contributors.
 # All rights reserved.
@@ -21,7 +26,7 @@ import warnings
 import yaml
 
 from hexrd import config
-
+# Forward modeling library
 from forward_modeling.fwd_modeling_from_micro import *
 from forward_modeling.microstructure_generation import *
 
@@ -57,7 +62,7 @@ if __name__ == '__main__':
         except:
             logger.error('Invalid forward modeling mode. Choices are datagen and fwdmodel')
 
-	# If datagen then generate synthetic microstructure data.
+	# If 'datagen' then generate synthetic microstructure data.
 	# Certain functions are predefined in the microstructure_generation library.
 	# Implement other functions there.
         if fwd_model_mode == "datagen":
@@ -85,7 +90,7 @@ if __name__ == '__main__':
 	    # Generate an ideal polycrystal. Each point is a grain. No mosaicity or strain.
             #generate_cubic_grains_random_ideal(nipt=fwd_model_nipt, output_file=fwd_model_op_file)
 
-	# If fwdmodel then simulate diffraction patterns
+	# If 'fwdmodel' then simulate diffraction patterns
         elif fwd_model_mode == "fwdmodel":
             # Get the fwdmodel mode: centroids or strainonly
             try:
@@ -100,26 +105,35 @@ if __name__ == '__main__':
                     cfg.get('forward_modeling')['fwdmodel']['input_file_name'].strip()
             except:
                 fwd_model_ip_filename = 'ms-data.csv'
-	    # Get the file name for output data - two-theta, eta, omega for spots.
+	    # Get the file name for output data -- two-theta, eta, omega for spots.
             try:
                 fwd_model_op_filename = cfg.get('forward_modeling')['fwdmodel']['output_file_name'].strip()
             except:
                 logger.info('Invalid output text file name. Defaulting to synth-data.out.')
                 fwd_model_op_filename = 'synth-data.out'
+	    # Get CIF file name for structure factor calculation. If CIF is not given, a structure
+            # factor value of 1 is used for all rings.
+            try:
+                cif_filename = cfg.get('material')['cif'].strip()
+            except:
+                logger.info('CIF file for structure not provided. Using a uniform structure factor for rings.')
+                cif_filename = None
 
 	    # Create a Microstructure object. This stores all data related to input and simulated output.
 	    # TODO: Decide if we want to read everything from cfg into Microstructure or from cfg to here.
-            ms = Microstructure(cfg, logger, fwd_model_ip_filename)
+            ms = Microstructure(cfg, logger, fwd_model_ip_filename, cif_filename)
 	    # Read microstructural input froma  CSV file.
             ms.read_csv()
-
+            # Forward modeling mode
             if fwdmodel_mode is 'centroids':
+                # This mode does not consider the effects of having a finite sized sample.
                 ms.simulate_pattern_to_detector()
 
             if fwdmodel_mode is 'strainonly':
-	        # Obtain diffraction angles using routines implemented in heXRD
+	        # Obtain diffraction angles using routines implemented in heXRD. This takes into 
+                # account everything -- strain, position, orientation.
                 ms.get_diffraction_angles()
-
+            # Write output (spot angles, position etc.) to aa text file?
             try:
                 output_txt_flag = cfg.get('forward_modeling')['fwdmodel']['output_txt']
             except:
@@ -131,20 +145,20 @@ if __name__ == '__main__':
             if fwdmodel_mode is 'strainonly':
 	        # Project the two-theta, eta, omega angles to X, Y using heXRD detector routines.
                 ms.project_angs_to_detector(output_txt=output_txt_flag, output_file=fwd_model_op_filename)
-
+            # Write output to a GE2 file?
 	    try:
 	        output_ge2_flag = cfg.get('forward_modeling')['fwdmodel']['output_ge']
 	    except:
 		output_ge2_flag = False
 
 	    if output_ge2_flag is not False:
-                # Write output to GE2
+                # Write output to GE2. First get the file name.
                 try:
                     output_ge2 = cfg.get('forward_modeling')['fwdmodel']['output_ge_name']
                 except:
                     logger.info('Invalid name for output GE2 file. Defaulting to ff_00000.ge2.')
                     output_ge2 = 'ff_00000.ge2'
-
+                # Get omega angular bounds (degrees)
                 try:
                     omega_start = cfg.get('forward_modeling')['fwdmodel']['output_omega']['start']
                     omega_step = cfg.get('forward_modeling')['fwdmodel']['output_omega']['step']
@@ -155,14 +169,14 @@ if __name__ == '__main__':
                     omega_step = 0.1
                     omega_stop = 360.0
 
-
+                # Apply Gaussian blur to the spots?
                 try:
                     ge2_blur_sigma = cfg.get('forward_modeling')['fwdmodel']['ge2_blur_sigma']
                 except:
                     ge2_blur_sigma = 3
 
                 logger.info('Writing GE2 output to %s', output_ge2)
-
+                # Actually write to a GE2.
                 if fwdmodel_mode is 'strainonly':
 	            ms.write_xyo_to_ge2(output_ge2=output_ge2, 
                                         omega_start=omega_start, 
@@ -177,6 +191,6 @@ if __name__ == '__main__':
                                            ge2_blur_sigma=ge2_blur_sigma) 
 
                 logger.info('Forward modeling COMPLETED')
-
+                # DONE
         else:
             logger.error('Invalid forward modeling mode: %s. Choices are datagen and fwdmodel', fwd_model_mode)

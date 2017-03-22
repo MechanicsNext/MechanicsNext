@@ -23,6 +23,9 @@ from hexrd import matrixutil as mutil
 from hexrd.fitgrains import get_instrument_parameters
 from hexrd.xrd import distortion as dFuncs
 from hexrd.xrd.xrdutil import simulateGVecs
+# PyMatGen for structure factor determination
+from pymatgen import Lattice, Structure
+from pymatgen.analysis.diffraction.xrd import XRDCalculator
 #--
 
 def write_ge2(filename, arr, nbytes_header=8192, pixel_type=np.uint16):
@@ -78,7 +81,7 @@ class Microstructure:
     spatial information for material/phase, crystal orientation, lattice strain
     and material properties and detector parameters for the virtual experiment.
     '''
-    def __init__(self, config, logger, datafile):
+    def __init__(self, config, logger, datafile, ciffile=None):
         self.cfg = config              # heXRD config object
         self.logger = logger           # logger
         self.ms_datafile = datafile    # microstructural data file
@@ -92,6 +95,24 @@ class Microstructure:
 
 	# Initialize detector and reader from the experiment. Really only detector is needed.
         pd, reader, detector = initialize_experiment(config)
+        if ciffile is not None:
+            # Read CIF file for crystal structure and structure factor determination
+            structure = Structure.from_file(ciffile)
+            print "Structure"
+            print structure
+            print structure.get_space_group_info()
+
+            c = XRDCalculator(wavelength=pd.wavelength)
+            structure_factor_data_tmp = c.get_xrd_data(structure, scaled=True, two_theta_range=(0, 60))
+            structure_factor_data = []
+            for tt, i, hklm, hkld in structure_factor_data_tmp:
+                structure_factor_data.append([tt, i])
+
+            structure_factor_data = np.vstack(structure_factor_data)
+        else:
+            structure = None
+            structure_factor_data = None
+
         # need instrument cfg later on down...
         instr_cfg = get_instrument_parameters(config)
         detector_params = np.hstack([
@@ -112,6 +133,7 @@ class Microstructure:
 	self.reader = reader
         self.detector_params = detector_params
         self.distortion = distortion
+        self.structure_factor_data = structure_factor_data
 
     def read_csv(self):
         ''' 
@@ -217,20 +239,24 @@ class Microstructure:
         synth_angles_MP_output = Parallel(n_jobs=num_cores, verbose=5)(delayed(simulate_pattern_to_detector_MP)(fwd_model_input_i) for fwd_model_input_i in fwd_model_input)
 
         intensity_factors_spot_tmp = []
+        synth_hkls_tmp = []
         synth_angles_tmp = []
         synth_xy_tmp = []
         for intensity_factor_ii, synth_angles_ii in zip(intensity_factors, synth_angles_MP_output):
             int_factor_tmp = np.ones_like(synth_angles_ii[2]) * intensity_factor_ii
             intensity_factors_spot_tmp.append(int_factor_tmp)
+            synth_hkls_tmp.append(synth_angles_ii[1])
             synth_angles_tmp.append(synth_angles_ii[2])
             synth_xy_tmp.append(synth_angles_ii[3])
 
         # Angles are [two-theta, eta, omega]
         # xy are in mm. Do this when plotting: Divide by 0.2 + 1024 = pixel values
+        synth_hkls = np.vstack(synth_hkls_tmp)
         synth_angles = np.vstack(synth_angles_tmp)
         intensity_factors_spot = np.vstack(intensity_factors_spot_tmp)
         synth_xy = np.vstack(synth_xy_tmp)
 
+        self.synth_hkls = synth_hkls
         self.synth_angles = synth_angles
         self.synth_xy = synth_xy
         self.intensity_factors_spot = intensity_factors_spot
@@ -349,6 +375,7 @@ class Microstructure:
         '''
         Version 2 of the routine below. This one uses (xy, angles) calculated by simulateGVecs
         '''
+        synth_hkls = self.synth_hkls
         synth_angles = self.synth_angles
         synth_xy = self.synth_xy
         intensity_factors_spot = self.intensity_factors_spot
@@ -356,6 +383,9 @@ class Microstructure:
         calc_xyo = self.calc_xyo
         detector = self.detector
         intensity_factors_spot = self.intensity_factors_spot
+
+        structure_factor_data = self.structure_factor_data
+
         # Get X, Y, omega dimensions to create a 3D array
         if output_ge2 is None:
             output_ge2 = 'ff_synth_00000.ge2'
@@ -375,10 +405,15 @@ class Microstructure:
         # Create an empty array of appropriate size
         synth_array = np.zeros((o_dim, x_dim, y_dim))
         # Fill in intensity details at appropriate X, Y, ome positions
-        for x, y, twotheta, eta, o, int_scale_factor, dummy_i1, dummy_i2 in np.hstack((synth_xy, synth_angles, intensity_factors_spot)):
+        for x, y, twotheta, eta, o, int_scale_factor, dummy_i1, dummy_i2, h, k, l in np.hstack((synth_xy, synth_angles, intensity_factors_spot, synth_hkls)):
             x = x / 0.200 + 1024.0
             y = y / 0.200 + 1024.0
+
+            closest_twotheta_index = (np.abs(structure_factor_data[:, 0] - (twotheta * 180.0 / np.pi))).argmin()
+            structure_factor = structure_factor_data[closest_twotheta_index, 1]
             # o = angs[2]
+
+            #print h, k, l
 
             if o < 0.:
                 o = o + 2.0*np.pi
@@ -404,7 +439,7 @@ class Microstructure:
                 # For now we are not calculating structure factor and realistic intensities for spots.
                 # Can we use heXRD crystallography functions? May be. Need to find a way of getting atom positions.
                 # Read in CIFs? haha fu*k no..
-                synth_array[o_op][y_op][x_op] = 12000 * int_scale_factor
+                synth_array[o_op][y_op][x_op] = 6000 * int_scale_factor * structure_factor / 100.0
         # Scale intensities so that they are really between 0, 12000
         max_intensity = np.amax(synth_array)
         final_int_scale_factor = 12000. / max_intensity
@@ -416,7 +451,7 @@ class Microstructure:
             synth_array_blurred = synth_array
 
         # Write the array to a GE2
-        write_ge2(output_ge2, synth_array_blurred)
+        # write_ge2(output_ge2, synth_array_blurred)
         # Also write a max-over frame for now.
         synth_array_max = np.amax(synth_array_blurred, axis=0)
         output_ge2_max = output_ge2.rsplit('.', 1)[0]
