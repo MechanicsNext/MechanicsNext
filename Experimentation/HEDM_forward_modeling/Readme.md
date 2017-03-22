@@ -2,10 +2,11 @@
 
 # Far-field High-energy Diffraction Microscopy Spot Simulation (Forward Modeling) Utility
 
-A utility to read raw GE2 or GE3 files obtained during a [far-field high-energy diffraction microscopy](https://pdfs.semanticscholar.org/0c56/6a8040f5d60674063d41a3628b1da8d5270a.pdf) (ff-HEDM) experiment and segment the spots
-in the data using connected component segmentation, local intensity maxima finding, and watershed segmentation. This utlity is particularly useful when
-the data consists of multiple phases such that the Debye-Scherrer rings from the two phases have large intensity contrast but small
-radial separation.
+A utility to simulate ff-HEDM area diffraction patterns from microstructures. The microstructure is specified in terms of
+the position, crystal structure, and elastic strain of each material point in a discrete mesh generated over a virtual 
+specimen. Diffraction patterns are simulated using forward modeling routines in [heXRD](https://github.com/praxes/hexrd).
+Optionally structure factors calculated using [Pymatgen](http://pymatgen.org/) are used. The output is written to text
+and GE2 files.
 
 ## Installation
 ### Prerequisites
@@ -50,4 +51,8 @@ python MECHANICSNEXT_DIR/Experimentation/HEDM_forward_modeling/synth_fwd_modelin
 <p align="center">
   <img src="https://github.com/MechanicsNext/MechanicsNext/blob/master/MeshnicsNext_Assets/Experimentation_HEDM_forward_modeling_algorithm.png" width=400px>
 </p>
+
+
+## Microstructure file format
+TODO
 
