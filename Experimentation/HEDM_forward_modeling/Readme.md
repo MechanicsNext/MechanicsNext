@@ -54,5 +54,10 @@ python MECHANICSNEXT_DIR/Experimentation/HEDM_forward_modeling/synth_fwd_modelin
 
 
 ## Microstructure file format
-TODO
+Imagine a material volume whose far-field area diffraction patterns are to be simulated. Generate a grid of points covering the whole volume. Assign position, material, orientation, and elastic strain information to each point. The mesh along with the information associated with each point is a *microstructure*. This microstructure is described in a text file containing 14 columns.
+
+* **Columns 1 to 3**: Location of a point in the grid. In microns. It is a good practice to create a grid that goes from -X to X, -Y to Y, -Z to Z.
+* **Column 4**: Material name. Thre should be a corresponding material in the heXRD material file provided. The name should not contain spaces. Crystal structure and lattice parameters from this material will be in determining spot positions.
+* **Columns 5 to 8**: Crystal orientation of the grid point in quaternions.
+* **Columns 9 to 14**: Elastic right stretch tensor at the point. i.e., *U* in *F = RU*, where *F* is the deformation gradient, *U* is the stretch, and *R* is the rotation.
 
