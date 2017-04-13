@@ -7,6 +7,8 @@ in the data using connected component segmentation, local intensity maxima findi
 the data consists of multiple phases such that the Debye-Scherrer rings from the two phases have large intensity contrast but small
 radial separation.
 
+For details of the algorithm, see the companion publication: Paranjape, H. M. et al., *An Algorithm to Segment Overlapping Bragg Peaks in Far-field High-energy Diffraction Microscopy Area Diffraction Patterns from Deformed Single and Multi-phase Materials*. (under peer review) Journal of Applied Crystallography.
+
 ## Installation
 ### Prerequisites
 1. Linux system.
