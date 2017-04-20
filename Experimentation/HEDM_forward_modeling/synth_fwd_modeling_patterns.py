@@ -1,5 +1,5 @@
 ###############################################################################
-# MechanicsNext: ff-HEDM Spot Segmentation Program
+# MechanicsNext: HEDM Diffraction Pattern Simulation Program
 # (https://github.com/MechanicsNext/MechanicsNext/blob/master/Experimentation/HEDM_preprocessing/)
 #
 # Simulate far-field high-energy diffraction microscopy patterns from
@@ -123,7 +123,12 @@ if __name__ == '__main__':
 	    # TODO: Decide if we want to read everything from cfg into Microstructure or from cfg to here.
             ms = Microstructure(cfg, logger, fwd_model_ip_filename, cif_filename)
 	    # Read microstructural input froma  CSV file.
-            ms.read_csv()
+            try:
+                ms_filetype = cfg.get('forward_modeling')['fwdmodel']['input_type'].strip()
+            except:
+                ms_filetype = 'ms'
+
+            ms.read_csv(filetype=ms_filetype)
             # Forward modeling mode
             if fwdmodel_mode is 'centroids':
                 # This mode does not consider the effects of having a finite sized sample.
@@ -141,8 +146,6 @@ if __name__ == '__main__':
 
             if output_txt_flag is not False:
                 logger.info('Writing text output to %s', fwd_model_op_filename)
-
-            if fwdmodel_mode is 'strainonly':
 	        # Project the two-theta, eta, omega angles to X, Y using heXRD detector routines.
                 ms.project_angs_to_detector(output_txt=output_txt_flag, output_file=fwd_model_op_filename)
             # Write output to a GE2 file?

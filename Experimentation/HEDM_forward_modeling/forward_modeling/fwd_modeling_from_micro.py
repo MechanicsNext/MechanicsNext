@@ -24,8 +24,12 @@ from hexrd.fitgrains import get_instrument_parameters
 from hexrd.xrd import distortion as dFuncs
 from hexrd.xrd.xrdutil import simulateGVecs
 # PyMatGen for structure factor determination
-from pymatgen import Lattice, Structure
-from pymatgen.analysis.diffraction.xrd import XRDCalculator
+try:
+    from pymatgen import Lattice, Structure
+    from pymatgen.analysis.diffraction.xrd import XRDCalculator
+    use_pymatgen = True
+except:
+    use_pymatgen = False
 #--
 
 def write_ge2(filename, arr, nbytes_header=8192, pixel_type=np.uint16):
@@ -95,7 +99,7 @@ class Microstructure:
 
 	# Initialize detector and reader from the experiment. Really only detector is needed.
         pd, reader, detector = initialize_experiment(config)
-        if ciffile is not None:
+        if ciffile is not None and use_pymatgen:
             # Read CIF file for crystal structure and structure factor determination
             structure = Structure.from_file(ciffile)
             print "Structure"
@@ -184,28 +188,24 @@ class Microstructure:
         else:
             # Read accepted_orientations.dat file from heXRD find-orientations output
             try:
-                ms_data = np.loadtxt(filename, dtype=None, comments='#', delimiter=' ',
+                ms_data = np.loadtxt(filename, dtype=None, comments='#', delimiter='\t',
                                      usecols=(0,1,2,3),
                                      ndmin=2)
 
                 ms_data = np.array(ms_data)
-
-                # We will set the active material here
-                material_name = cfg.material.active
-                print material_name
-                ms_mat_data = np.repeat(material_name, np.shape(material_name)[0])
+                ms_mat_data = [cfg.material.active.strip()] * np.shape(ms_data)[0]
 
             except:
                 logger.error('Could not read microstructural data from %s', filename)
                 ms_data = None
                 ms_mat_data = None
 
-            self.ms_grid = np.zeros((np.shape(ms_data)[0], 1))
-            self.ms_material_ids = ms_mat_data[:, 0]
+            self.ms_grid = np.zeros((np.shape(ms_data)[0], 3))
+            self.ms_material_ids = ms_mat_data
             self.ms_quaternions = ms_data
             self.ms_lat_defgrads = np.hstack((np.ones((np.shape(ms_data)[0], 3)), \
                                               np.zeros((np.shape(ms_data)[0], 3))))
-            self.int_factor_data = np.ones_like(ms_data)
+            self.intensity_factors = np.ones_like(ms_data)[:, 0]
 
 
     def simulate_pattern_to_detector(self):
@@ -272,6 +272,7 @@ class Microstructure:
         synth_hkls_tmp = []
         synth_angles_tmp = []
         synth_xy_tmp = []
+
         for intensity_factor_ii, synth_angles_ii in zip(intensity_factors, synth_angles_MP_output):
             int_factor_tmp = np.ones_like(synth_angles_ii[2]) * intensity_factor_ii
             intensity_factors_spot_tmp.append(int_factor_tmp)
