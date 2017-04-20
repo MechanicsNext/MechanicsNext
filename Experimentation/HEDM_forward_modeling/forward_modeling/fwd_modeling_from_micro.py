@@ -135,48 +135,78 @@ class Microstructure:
         self.distortion = distortion
         self.structure_factor_data = structure_factor_data
 
-    def read_csv(self):
+    def read_csv(self, filetype='ms'):
         ''' 
         Load microstructural data from a csv file. Required columns are
         Position_X, position_Y, position_Z, material_name, 
         orientation_quat_1, orientation_quat_2, orientation_quat_3, orientation_quat_4,
         strain_11, strain_22, strain_33, 
         strain_12, strain_23, strain_31, 
+        intensity_factor
         '''
 
         filename = self.ms_datafile
         logger = self.logger
+        cfg = self.cfg
 
-        try:
-            ms_data = np.loadtxt(filename, dtype=None, comments='#', delimiter=',',
-                                 usecols=(0,1,2,4,5,6,7,8,9,10,11,12,13),
-                                 ndmin=2)
-            ms_mat_data = np.loadtxt(filename, dtype='str', comments='#', delimiter=',',
-                                  usecols=(3,), ndmin=2)
+        if filetype is 'ms':
+            # Text file with microstructure data in 14 or 15 columns
+            try:
+                ms_data = np.loadtxt(filename, dtype=None, comments='#', delimiter=',',
+                                     usecols=(0,1,2,4,5,6,7,8,9,10,11,12,13),
+                                     ndmin=2)
+                ms_mat_data = np.loadtxt(filename, dtype='str', comments='#', delimiter=',',
+                                      usecols=(3,), ndmin=2)
 
-            ms_data = np.array(ms_data)
-            ms_mat_data = np.array(ms_mat_data)
-        except:
-            logger.error('Could not read microstructural data from %s', filename)
-            ms_data = None
-            ms_material_data = None
+                ms_data = np.array(ms_data)
+                ms_mat_data = np.array(ms_mat_data)
+            except:
+                logger.error('Could not read microstructural data from %s', filename)
+                ms_data = None
+                ms_mat_data = None
 
-        self.ms_grid = ms_data[:, range(0, 3)]
-        self.ms_material_ids = ms_mat_data[:, 0]
-        self.ms_quaternions = ms_data[:, range(3, 7)]
-        self.ms_lat_defgrads = ms_data[:, range(7, 13)]
+            self.ms_grid = ms_data[:, range(0, 3)]
+            self.ms_material_ids = ms_mat_data[:, 0]
+            self.ms_quaternions = ms_data[:, range(3, 7)]
+            self.ms_lat_defgrads = ms_data[:, range(7, 13)]
 
-        # Try reading intensity factors (15th column)
-        try:
-            int_factor_data = np.loadtxt(filename, dtype=None, comments='#', delimiter=',',
-                              usecols=(14,),
-                              ndmin=2)
-        except:
-            logger.error('Could not read intensity scaling data from %s', filename)
-            int_factor_data = np.ones_like(ms_data)
-            int_factor_data = int_factor_data[:, 0]
+            # Try reading intensity factors (15th column)
+            try:
+                int_factor_data = np.loadtxt(filename, dtype=None, comments='#', delimiter=',',
+                                  usecols=(14,),
+                                  ndmin=2)
+            except:
+                logger.error('Could not read intensity scaling data from %s', filename)
+                int_factor_data = np.ones_like(ms_data)
+                int_factor_data = int_factor_data[:, 0]
 
-        self.intensity_factors = int_factor_data
+            self.intensity_factors = int_factor_data
+        else:
+            # Read accepted_orientations.dat file from heXRD find-orientations output
+            try:
+                ms_data = np.loadtxt(filename, dtype=None, comments='#', delimiter=' ',
+                                     usecols=(0,1,2,3),
+                                     ndmin=2)
+
+                ms_data = np.array(ms_data)
+
+                # We will set the active material here
+                material_name = cfg.material.active
+                print material_name
+                ms_mat_data = np.repeat(material_name, np.shape(material_name)[0])
+
+            except:
+                logger.error('Could not read microstructural data from %s', filename)
+                ms_data = None
+                ms_mat_data = None
+
+            self.ms_grid = np.zeros((np.shape(ms_data)[0], 1))
+            self.ms_material_ids = ms_mat_data[:, 0]
+            self.ms_quaternions = ms_data
+            self.ms_lat_defgrads = np.hstack((np.ones((np.shape(ms_data)[0], 3)), \
+                                              np.zeros((np.shape(ms_data)[0], 3))))
+            self.int_factor_data = np.ones_like(ms_data)
+
 
     def simulate_pattern_to_detector(self):
         cfg = self.cfg
