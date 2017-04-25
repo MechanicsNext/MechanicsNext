@@ -85,9 +85,10 @@ class Microstructure:
     spatial information for material/phase, crystal orientation, lattice strain
     and material properties and detector parameters for the virtual experiment.
     '''
-    def __init__(self, config, logger, datafile, ciffile=None):
+    def __init__(self, config, logger, datafile, ciffile=None, hedm_mode='ff'):
         self.cfg = config              # heXRD config object
         self.logger = logger           # logger
+        self.hedm_mode = hedm_mode     # HEDM mode (FF or NF)
         self.ms_datafile = datafile    # microstructural data file
         self.ms_grid = []              # (N, 3) array of X, Y, Z positions in microns
         self.ms_material_ids = []      # (N) Array of material present at X, Y, Z
@@ -402,7 +403,8 @@ class Microstructure:
         return calc_xyo
 
 
-    def write_xyo_to_ge2_v2(self, output_ge2=None, omega_start=None, omega_step=None, omega_stop=None, ge2_blur_sigma=3):
+    def write_xyo_to_ge2_v2(self, output_ge2=None, omega_start=None, omega_step=None, omega_stop=None, ge2_blur_sigma=3,
+			    pixel_size=[0.2, 0.2], is_tif=False):
         '''
         Version 2 of the routine below. This one uses (xy, angles) calculated by simulateGVecs
         '''
@@ -416,6 +418,9 @@ class Microstructure:
         intensity_factors_spot = self.intensity_factors_spot
 
         structure_factor_data = self.structure_factor_data
+
+        config = self.cfg
+        hedm_mode = self.hedm_mode
 
         # Get X, Y, omega dimensions to create a 3D array
         if output_ge2 is None:
@@ -437,8 +442,8 @@ class Microstructure:
         synth_array = np.zeros((o_dim, x_dim, y_dim))
         # Fill in intensity details at appropriate X, Y, ome positions
         for x, y, twotheta, eta, o, int_scale_factor, dummy_i1, dummy_i2, h, k, l in np.hstack((synth_xy, synth_angles, intensity_factors_spot, synth_hkls)):
-            x = x / 0.200 + 1024.0
-            y = y / 0.200 + 1024.0
+            x = x / pixel_size[0] + 1024.0
+            y = y / pixel_size[1] + 1024.0
 
             closest_twotheta_index = (np.abs(structure_factor_data[:, 0] - (twotheta * 180.0 / np.pi))).argmin()
             structure_factor = structure_factor_data[closest_twotheta_index, 1]
@@ -482,7 +487,7 @@ class Microstructure:
             synth_array_blurred = synth_array
 
         # Write the array to a GE2
-        # write_ge2(output_ge2, synth_array_blurred)
+        write_ge2(output_ge2, synth_array_blurred)
         # Also write a max-over frame for now.
         synth_array_max = np.amax(synth_array_blurred, axis=0)
         output_ge2_max = output_ge2.rsplit('.', 1)[0]
