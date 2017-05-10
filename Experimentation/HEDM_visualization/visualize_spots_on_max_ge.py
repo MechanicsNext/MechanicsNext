@@ -96,6 +96,22 @@ if __name__ == '__main__':
     ge_filename = sys.argv[1]
     spot_filename = sys.argv[2]
 
+    try:
+        image_filename = sys.argv[3]
+        image_filename = image_filename.strip().lower()
+    except:
+        image_filename = 'spots.png'
+
+    try:
+        intensity_min = float(sys.argv[4])
+    except:
+        intensity_min = 0
+
+    try:
+        intensity_max = float(sys.argv[5])
+    except:
+        intensity_max = 1000
+
     f = open(ge_filename, 'rb')
     f.seek(8192)
     ge_data = np.fromfile(f, dtype=np.uint16).reshape((2048, 2048))
@@ -103,5 +119,5 @@ if __name__ == '__main__':
 
     spot_data = np.loadtxt(spot_filename)
 
-    write_image('spots.png', ge_data, pts=spot_data[:, 0:2], vmin=1800, vmax=2200)
+    write_image(image_filename, ge_data, pts=spot_data[:, 0:2], vmin=intensity_min, vmax=intensity_max)
 
