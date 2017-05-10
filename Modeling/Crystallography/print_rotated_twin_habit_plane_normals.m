@@ -1,4 +1,4 @@
-function [] = print_rotated_twin_habit_plane_normals(TEXTURE, loading_axis, foil_plane, print_flag, print_sort_order, plot_flag, U)
+function [twin_plane_data, twin_plane_rotations, habit_plane_data, habit_plane_rotations] = print_rotated_twin_habit_plane_normals(TEXTURE, loading_axis, foil_plane, print_flag, print_sort_order, plot_flag, U)
 % SMA Calculations: Habit/Twin Elements in the global coordinates
 %
 % Rotate twin elements (a, n) and habit plane elements (b, m) from crystal
@@ -29,11 +29,20 @@ for itex=1:size(TEXTURE, 1)
     % tlg=euler2g(euler);
     tlg = matrix(rotation(quaternion(TEXTURE(itex,:)')));
     % Rotate b, m for habit planes
-    cb0 = am_elements(:, 3:5)';
-    cm0 = am_elements(:, 6:8)';
+    cb0     = am_elements(:, 3:5)';
+    cm0     = am_elements(:, 6:8)';
+    Q_habit = am_elements(:, 10:18);
     % Transform to sample
-    b0 = tlg*cb0;
-    m0 = tlg*cm0;
+    apply_rotation = 0; % 0 | 1: Apply rotation Q that is part of the Hadamard jump condition
+    if(apply_rotation == 0)
+        b0 = tlg * cb0;
+        m0 = tlg * cm0;
+    else
+        for qq = 1:size(Q, 1)
+            b0(:, qq) = tlg * reshape(Q_habit(qq, :), 3, 3) * cb0(:, qq);
+            m0(:, qq) = tlg * reshape(Q_habit(qq, :), 3, 3) * cm0(:, qq);
+        end
+    end
     theta_habit = zeros(size(m0, 2), 1);
     % Angle between projection of habit plane **normal** on foil plane and
     % the loading axis
@@ -53,11 +62,20 @@ for itex=1:size(TEXTURE, 1)
     end
     am_elements_global = [am_elements(:, 1:2) b0' m0' am_elements(:, 9)];
     % Rotate a, n for twin planes
-    ca0 = twin_elements(:, 3:5)';
-    cn0 = twin_elements(:, 6:8)';
+    ca0    = twin_elements(:, 3:5)';
+    cn0    = twin_elements(:, 6:8)';
+    Q_twin = twin_elements(:, 9:17);
     % Transform to sample
-    a0 = tlg*ca0;
-    n0 = tlg*cn0;
+    apply_rotation = 0; % 0 | 1: Apply rotation Q that is part of the Hadamard jump condition (QU1 - U2 = a x n)
+    if(apply_rotation == 0)
+        a0 = tlg * ca0;
+        n0 = tlg * cn0;
+    else
+        for qq = 1:size(Q, 1)
+            a0(:, qq) = tlg * reshape(Q_twin(qq, :), 3, 3) * ca0(:, qq);
+            n0(:, qq) = tlg * reshape(Q_twin(qq, :), 3, 3) * cn0(:, qq);
+        end
+    end
     theta_twin = zeros(size(n0, 2), 1);
     % Angle between projection of twin plane **normal** on foil plane and
     % the loading axis
@@ -79,6 +97,7 @@ for itex=1:size(TEXTURE, 1)
         twin_plane_data_global = [[1:size(twin_elements_global, 1)]' twin_elements_global theta_twin];
         invariant_plane_data_global = [[1:size(am_elements_global, 1)]' am_elements_global 100*schmid_habit theta_habit corresponding_twin'];
         if(print_sort_order == 0)
+            % Print habit plane elements sorted by CV number
             disp('             CV1 CV2        |------------------a------------------|        |------------------n------------------|       Angle')
             disp(sprintf(' %4d\t %2d\t %2d\t %7.4f\t %7.4f\t %7.4f\t %7.4f\t %7.4f\t %7.4f\t %7.1f\n', [[1:size(twin_elements_global, 1)]' twin_elements_global theta_twin]'))
             % Print A-M invariant plane elements
@@ -86,9 +105,14 @@ for itex=1:size(TEXTURE, 1)
             disp(sprintf(' %3d\t %2d\t %2d\t %7.4f\t %7.4f\t %7.4f\t %7.4f\t %7.4f\t %7.4f\t %7.4f\t %7.1f\t %3.1f\t %2d\n', ...
                 [[1:size(am_elements_global, 1)]' am_elements_global 100*schmid_habit theta_habit corresponding_twin']'))
         elseif(print_sort_order == 1)
+            % Print habit plane elements sorted by transformation strain
             disp('Twin plane elements (a = direction, n = twin plane normal)')
             disp('         CV1     CV2        |------------------a------------------|        |------------------n------------------|       Angle')
             disp(sprintf(' %4d\t %2d\t %2d\t %7.4f\t %7.4f\t %7.4f\t %7.4f\t %7.4f\t %7.4f\t %7.1f\n', [[1:size(twin_elements_global, 1)]' twin_elements_global theta_twin]'))
+            disp('Rotations')
+            disp(sprintf(' %4d\t %2d\t %2d\t %7.4f\t %7.4f\t %7.4f\t %7.4f\t %7.4f\t %7.4f\t %7.4f\t %7.4f\t %7.4f\n', ...
+                [[1:size(twin_elements_global, 1)]' twin_elements_global(:, 1:2) Q_twin]'))
+            %
             [~, idx] = sort(invariant_plane_data_global(:, 11));
             invariant_plane_data_global_sorted = invariant_plane_data_global(idx, :);
             % Print B-M invariant plane elements
@@ -96,8 +120,18 @@ for itex=1:size(TEXTURE, 1)
             disp('         CV1     CV2     |------------------b------------------|        |------------------m------------------|          lambda             Schmid      Angle')
             disp(sprintf(' %3d\t %2d\t %2d\t %7.4f\t %7.4f\t %7.4f\t %7.4f\t %7.4f\t %7.4f\t %7.4f\t %7.1f\t %3.1f\t %2d\n', ...
                 invariant_plane_data_global_sorted(:, :)'))
+            disp('Rotations')
+            disp(sprintf(' %3d\t %2d\t %2d\t %7.4f\t %7.4f\t %7.4f\t %7.4f\t %7.4f\t %7.4f\t %7.4f\t %7.4f\t %7.4f\n', ...
+                [invariant_plane_data_global_sorted(:, 1:3) Q_habit(idx, :)]'))
         end
     end
+    %
+    % Prepare output variables
+    twin_plane_data = twin_elements_global;
+    twin_plane_rotations = Q_twin;
+    habit_plane_data = invariant_plane_data_global_sorted(:, 2:end);
+    habit_plane_rotations = Q_habit(idx, :);
+    %
     % Plot AM and MM interface projection in foil_plane
     if(plot_flag == 1)
         am_elements_global(am_elements_global(:, 1) ~= 4, :) = [];
