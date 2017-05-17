@@ -1,9 +1,3 @@
-<img src="https://github.com/MechanicsNext/MechanicsNext/blob/master/MeshnicsNext_Assets/mechanics_next_wordmark.png" width=64px>
-
-# MATLAB-based Tools for DIC Post-processing
-
-Currently work with the data generated using [NCORR](http://www.ncorr.com) software.
-
 
 ## Acknowledgement
 
@@ -12,6 +6,7 @@ This application uses Open Source components. You can find the source code of th
 * [MATLAB diffraction tools](https://github.com/junspark/matlab_tools) by Jun-Sang Park
 * The [NCORR](http://ncorr.com/) digital image correlation package
 * The [heXRD](https://github.com/praxes/hexrd) high-energy X-ray diffraction package
+* [Geom3D](https://www.mathworks.com/matlabcentral/fileexchange/24484-geom3d) MATLAB package copyright of INRA. See [license file](https://www.mathworks.com/matlabcentral/fileexchange/24484-geom3d).
 
 ## License
 
