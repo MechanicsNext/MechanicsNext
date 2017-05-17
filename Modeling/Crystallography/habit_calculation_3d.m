@@ -155,7 +155,8 @@ for mt=1:size(twin_elements, 1)
         end
     end
 end
-
+disp(size(am_elements))
+disp(size(twin_elements))
 cb0 = am_elements(:, 3:5)';
 cm0 = am_elements(:, 6:8)';
 

@@ -21,7 +21,9 @@ function [twin_plane_data, twin_plane_rotations, habit_plane_data, habit_plane_r
 %                plots at once for NiTi.
 % U            = Cell array of transformation deformation gradients (not strain)
 % Get a, n, b, m
-[~, ~, twin_elements, am_elements, corresponding_twin] = habit_calculation_3d(U);
+[~, ~, twin_elements, am_elements, corresponding_twin] = habit_calculation_3d(U)
+disp(size(twin_elements))
+disp(size(am_elements))
 % Rotate everything from crystal to global coordinates
 for itex=1:size(TEXTURE, 1)
     % euler = TEXTURE(itex, :)*pi/180.0;
