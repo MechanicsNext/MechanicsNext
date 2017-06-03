@@ -69,7 +69,7 @@ def write_image(filename, arr, pts=None, minsize=None, **kwds):
     if pts is not None:
         pts = np.asarray(pts)
         #ax.plot(pts[:,1], pts[:,0], 'go', markersize=9)
-        ax.scatter(pts[:,1], pts[:,0], s=81, facecolors='none', edgecolors='y')
+        ax.scatter(pts[:,1], pts[:,0], s=49, facecolors='none', edgecolors='y')
         # resize (since adding points often adds padding)
         ax.set_xlim(0, 2048)
         ax.set_ylim(0, 2048)
@@ -103,5 +103,5 @@ if __name__ == '__main__':
 
     spot_data = np.loadtxt(spot_filename)
 
-    write_image('spots.png', ge_data, pts=spot_data[:, 0:2], vmin=1800, vmax=2200)
+    write_image('spots.png', ge_data, pts=spot_data[:, 0:2], vmin=0, vmax=80)
 
