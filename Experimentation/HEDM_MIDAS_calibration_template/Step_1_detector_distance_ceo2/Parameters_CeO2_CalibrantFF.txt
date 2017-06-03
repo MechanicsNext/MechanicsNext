@@ -1,0 +1,46 @@
+# Run with "midas_calibrant Parameters_CeO2_CalibrantFF.txt "   
+#
+# Change Regularly
+Wavelength        0.222921                                ### ANGSTROMS
+FileStem          ff                                      ### FILESTEM BEFORE THE LAST UNDERSCORE "FILESTEM_XXXZZZ.geY"
+Dark              /FULL/PATH/TO/RAW/DATA/CeO2/ff_00001.ge3       ### DARK FILE FULL PATH
+Folder            /FULL/PATH/TO/RAW/DATA/CeO2/                   ### DIRECTORY WHERE RAW DATA LIVE
+Padding           5                                       ### "FILESTEM_XXXZZZ.geY" NUMBER OF X AND Z IN FILE NUMBER (6 IN THIS CASE)
+StartNr           15                                      ### First Image Number
+EndNr             16                                      ### Last Image Number
+Lsd               1048000.000                             ### SAMPLE TO DETECTOR DISTANCE IN MICRONS (FIT2D OUTPUT SUFFICIENT)
+BC                1024.0 1024.0                           ### BEAM CENTER IN PIXELS (HORIZ, VERICAL)
+tx                0                                       ### TILT OF THE DETECTOR AROUND X RAY BEAM (ALONG ZL)
+ty                0.0
+tz                0.0
+p0                0.0
+p1                0.0
+p2                0.0
+Wedge             0                                       ### 90-TILT OF THE ROTATION AXIS WITH RESPECT TO X-RAY ABOUT +X
+RhoD              200000                                  ### MAX RING RADIUS (MICRONS) TO LIMIT NUMBER OF RINGS TO SIMULATE / CALCULATION (WILL BE RENAMED RhoD)
+RingsToExclude    8                                       ### EXCLUDE RINGS THAT ARE SATURATED AND DOUBLETS (KEEP ONLY ONE)
+RingsToExclude    9                                       
+RingsToExclude    10                                       
+RingsToExclude    11                                       
+RingsToExclude    12                                       
+RingsToExclude    13                                      
+RingsToExclude    14                                      
+RingsToExclude    15                                      
+#
+# Change Occassionally
+Ext               .ge3                                    ### FILE NAME EXTENSION
+#
+# Change Infrequently
+LatticeParameter  5.4116 5.4116 5.4116 90 90 90           ### a, b, c, alpha, beta, gamma (ANGSTROM / DEG)
+SpaceGroup        225                                     ### 225: CeO2, 221: LaB6
+tolBC             10                                      ### BEAM CENTER TOLERANCE IF DoFit = 1 (PIX)
+tolLsd            5000                                    ### SAMPLE TO DETECTOR DISTANCE TOLERANCE IF DoFit = 1 (MICRONS)
+tolP              1E-3                                    
+tolTilts          3                                       ### TILT TOLERANCE IF DoFit = 1 (DEG)
+EtaBinSize        5                                       ### AZIMUTHAL BIN SIZE
+#
+# APS specific
+ImTransOpt        0                                       ### Image Transpose/Fl
+NrPixels          2048                                    ### NUMBER OF PIXELS IN DETECTOR IN A DIRECTION (ASSUME SQUARE DETECTOR)
+Width             1000                                    ### 1/2 * (TTH RANGE FOR PEAKSEARCH IN MICRONS)
+px                200                                     ### PIXEL SIZE IN MICRONS (ASSUME SQUARE PIXELS)
