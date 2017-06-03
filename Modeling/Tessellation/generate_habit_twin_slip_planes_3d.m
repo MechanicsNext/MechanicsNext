@@ -4,7 +4,7 @@ function [fighandle, elements, element_phase] = generate_habit_twin_slip_planes_
                                                       slip_plane_color_ip, slip_plane_opacity, foil_plane, ...
                                                       bbox_half_width, number_of_twins, ...
                                                       mesh_data_dir, node_file_name, connectivity_file_name, ...
-                                                      elems_input)
+                                                      elems_input, plot_flag)
 % 3D plot showing habit and twin interafces for CV 1-9.
 % CHESS June 2015 SC data
 %
@@ -19,7 +19,9 @@ slip_direction     = slip_direction / norm(slip_direction);
 %
 fighandle = figure('Position', [200 200 600 600]);
 % Hack to force 3D view. Not sure if needed in 2015a.
-plot3(0, 0, 0);
+if(plot_flag > 0)
+    plot3(0, 0, 0);
+end
 % Various planes are defined by their normal. a variable ending in 'p'
 % means that the normal is +ve. 'm' at the end means that the normal is -ve
 % So planem and planep define the same plane but with the normal pointing
@@ -95,7 +97,9 @@ zm = createPlane([0  0 -bbox_half_width],  [0 0 1]);
 % Plot stuff
 % Invariant plane  = green
 % Twin planes = magenta
-hold on;
+if(plot_flag > 0)
+    hold on;
+end
 % plane_extent is a terrible hack. plane_extent specifies the "width" of a
 % plane. This is set to a very large number compared to our plot bounding
 % box. That way, any two reasonably non-parallel parallel planes are
@@ -105,16 +109,18 @@ hold on;
 % (2x2x2 for now)
 plane_extent = 1800;
 % Foil plane
-if(~isempty(foil_plane))
+if(~isempty(foil_plane) && plot_flag > 0)
     try
         patch_foil = fillPolygon3d(clipPolygonByBBox(foil, plane_extent, bbox_half_width), 'w');
     catch
     end
 end
 % Habit plane
-patch_a = fillPolygon3d(clipPolygonByBBox(i, plane_extent, bbox_half_width), austenite_color);
+if(plot_flag > 0)
+    patch_a = fillPolygon3d(clipPolygonByBBox(i, plane_extent, bbox_half_width), austenite_color);
+end
 % Clipped bounding box for the habit plane
-if(isempty(slip_plane_normal) || isempty(slip_direction))
+if((isempty(slip_plane_normal) || isempty(slip_direction)) && plot_flag > 0)
     try
         fillPolygon3d(clipPolygonByOnePlanes(xp, plane_extent, bbox_half_width, im), austenite_color);
         fillPolygon3d(clipPolygonByOnePlanes(xm, plane_extent, bbox_half_width, im), austenite_color);
@@ -126,7 +132,7 @@ if(isempty(slip_plane_normal) || isempty(slip_direction))
     end
 end
 % Clipped slip planes
-if(~isempty(slip_plane_normal) || ~isempty(slip_direction))
+if((~isempty(slip_plane_normal) || ~isempty(slip_direction)) && plot_flag > 0)
     try
         patch_slip_1 = fillPolygon3d(clipPolygonByOnePlanes(s1, plane_extent, bbox_half_width, im), slip_plane_color_ip);
         patch_slip_2 = fillPolygon3d(clipPolygonByOnePlanes(s2, plane_extent, bbox_half_width, im), slip_plane_color_ip);
@@ -145,8 +151,10 @@ end
 t_drawn = zeros(4 * number_of_twins + 2, 1);
 for ii = 1:(4 * number_of_twins + 1)
     try
-        fillPolygon3d(clipPolygonByOnePlanes(t_store{ii}, plane_extent, bbox_half_width, i), 'm');
-        t_drawn(ii) = 1;
+        if(plot_flag > 0)
+            fillPolygon3d(clipPolygonByOnePlanes(t_store{ii}, plane_extent, bbox_half_width, i), 'm');
+            t_drawn(ii) = 1;
+        end
     catch
         % disp(['Did not plot twin plane ' num2str(ii)])
     end
@@ -157,11 +165,15 @@ end
 % +ve X face
 for ii = 2:2:(4 * number_of_twins)
     try
-        patch_cv1 = fillPolygon3d(clipPolygonByThreePlanes(xp, plane_extent, bbox_half_width, i, tm_store{ii - 1}, t_store{ii}), CV1_color);
+        if(plot_flag > 0)
+            patch_cv1 = fillPolygon3d(clipPolygonByThreePlanes(xp, plane_extent, bbox_half_width, i, tm_store{ii - 1}, t_store{ii}), CV1_color);
+        end
     catch
     end
     try
-        fillPolygon3d(clipPolygonByThreePlanes(xp, plane_extent, bbox_half_width, i, tm_store{ii}, t_store{ii + 1}), CV2_color);
+        if(plot_flag > 0)
+            fillPolygon3d(clipPolygonByThreePlanes(xp, plane_extent, bbox_half_width, i, tm_store{ii}, t_store{ii + 1}), CV2_color);
+        end
     catch
     end
 end
@@ -169,11 +181,15 @@ end
 % -ve X face
 for ii = 2:2:(4 * number_of_twins)
     try
-        patch_cv1 = fillPolygon3d(clipPolygonByThreePlanes(xm, plane_extent, bbox_half_width, i, tm_store{ii - 1}, t_store{ii}), CV1_color);
+        if(plot_flag > 0)
+            patch_cv1 = fillPolygon3d(clipPolygonByThreePlanes(xm, plane_extent, bbox_half_width, i, tm_store{ii - 1}, t_store{ii}), CV1_color);
+        end
     catch
     end
     try
-        fillPolygon3d(clipPolygonByThreePlanes(xm, plane_extent, bbox_half_width, i, tm_store{ii}, t_store{ii + 1}), CV2_color);
+        if(plot_flag > 0)
+            fillPolygon3d(clipPolygonByThreePlanes(xm, plane_extent, bbox_half_width, i, tm_store{ii}, t_store{ii + 1}), CV2_color);
+        end
     catch
     end
 end
@@ -181,11 +197,15 @@ end
 % +ve Y face
 for ii = 2:2:(4 * number_of_twins)
     try
-        patch_cv1 = fillPolygon3d(clipPolygonByThreePlanes(yp, plane_extent, bbox_half_width, i, tm_store{ii - 1}, t_store{ii}), CV1_color);
+        if(plot_flag > 0)
+            patch_cv1 = fillPolygon3d(clipPolygonByThreePlanes(yp, plane_extent, bbox_half_width, i, tm_store{ii - 1}, t_store{ii}), CV1_color);
+        end
     catch
     end
     try
-        fillPolygon3d(clipPolygonByThreePlanes(yp, plane_extent, bbox_half_width, i, tm_store{ii}, t_store{ii + 1}), CV2_color);
+        if(plot_flag > 0)
+            fillPolygon3d(clipPolygonByThreePlanes(yp, plane_extent, bbox_half_width, i, tm_store{ii}, t_store{ii + 1}), CV2_color);
+        end
     catch
     end
 end
@@ -193,11 +213,15 @@ end
 % -ve Y face
 for ii = 2:2:(4 * number_of_twins)
     try
-        patch_cv1 = fillPolygon3d(clipPolygonByThreePlanes(ym, plane_extent, bbox_half_width, i, tm_store{ii - 1}, t_store{ii}), CV1_color);
+        if(plot_flag > 0)
+            patch_cv1 = fillPolygon3d(clipPolygonByThreePlanes(ym, plane_extent, bbox_half_width, i, tm_store{ii - 1}, t_store{ii}), CV1_color);
+        end
     catch
     end
     try
-        fillPolygon3d(clipPolygonByThreePlanes(ym, plane_extent, bbox_half_width, i, tm_store{ii}, t_store{ii + 1}), CV2_color);
+        if(plot_flag > 0)
+            fillPolygon3d(clipPolygonByThreePlanes(ym, plane_extent, bbox_half_width, i, tm_store{ii}, t_store{ii + 1}), CV2_color);
+        end
     catch
     end
 end
@@ -205,11 +229,15 @@ end
 % +ve Z face
 for ii = 2:2:(4 * number_of_twins)
     try
-        patch_cv1 = fillPolygon3d(clipPolygonByThreePlanes(zp, plane_extent, bbox_half_width, i, tm_store{ii - 1}, t_store{ii}), CV1_color);
+        if(plot_flag > 0)
+            patch_cv1 = fillPolygon3d(clipPolygonByThreePlanes(zp, plane_extent, bbox_half_width, i, tm_store{ii - 1}, t_store{ii}), CV1_color);
+        end
     catch
     end
     try
-        fillPolygon3d(clipPolygonByThreePlanes(zp, plane_extent, bbox_half_width, i, tm_store{ii}, t_store{ii + 1}), CV2_color);
+        if(plot_flag > 0)
+            fillPolygon3d(clipPolygonByThreePlanes(zp, plane_extent, bbox_half_width, i, tm_store{ii}, t_store{ii + 1}), CV2_color);
+        end
     catch
     end
 end
@@ -217,11 +245,15 @@ end
 % -ve Z face
 for ii = 2:2:(4 * number_of_twins)
     try
-        patch_cv1 = fillPolygon3d(clipPolygonByThreePlanes(zm, plane_extent, bbox_half_width, i, tm_store{ii - 1}, t_store{ii}), CV1_color);
+        if(plot_flag > 0)
+            patch_cv1 = fillPolygon3d(clipPolygonByThreePlanes(zm, plane_extent, bbox_half_width, i, tm_store{ii - 1}, t_store{ii}), CV1_color);
+        end
     catch
     end
     try
-        fillPolygon3d(clipPolygonByThreePlanes(zm, plane_extent, bbox_half_width, i, tm_store{ii}, t_store{ii + 1}), CV2_color);
+        if(plot_flag > 0)
+            fillPolygon3d(clipPolygonByThreePlanes(zm, plane_extent, bbox_half_width, i, tm_store{ii}, t_store{ii + 1}), CV2_color);
+        end
     catch
     end
 end
@@ -229,47 +261,51 @@ end
 % Slip direction
 % line([0 0 + slip_direction(1)], [1.5 1.5 + slip_direction(2)], [0 0 + slip_direction(3)], 'LineWidth', 3, 'Color', 'k');
 % X, Y, Z axes
-line([-2 -1],   [-2 -2],   [-2 -2],   'Color', 'r', 'LineWidth', 3)
-line([-2 -2],   [-2 -1],   [-2 -2],   'Color', 'g', 'LineWidth', 3)
-line([-2 -2],   [-2 -2],   [-2 -1],   'Color', 'b', 'LineWidth', 3)
-hold off;
+if(plot_flag > 0)
+    line([-2 -1],   [-2 -2],   [-2 -2],   'Color', 'r', 'LineWidth', 3)
+    line([-2 -2],   [-2 -1],   [-2 -2],   'Color', 'g', 'LineWidth', 3)
+    line([-2 -2],   [-2 -2],   [-2 -1],   'Color', 'b', 'LineWidth', 3)
+    hold off;
+end
 % Set axis etc
-alpha(0.8);
-% xlim([-bbox_half_width-1 bbox_half_width+1]); ylim([-bbox_half_width-1 bbox_half_width+1]); zlim([-bbox_half_width-1 bbox_half_width+1]);
-xlim([-bbox_half_width bbox_half_width]); ylim([-bbox_half_width bbox_half_width]); zlim([-bbox_half_width bbox_half_width]);
-grid off; box on; axis vis3d;
-set(gca, 'XTick', []); set(gca, 'XTickLabel', []);
-set(gca, 'YTick', []); set(gca, 'YTickLabel', []);
-set(gca, 'ZTick', []); set(gca, 'ZTickLabel', []);
-camproj('perspective')
-camtarget([-1 1 1]);
-camup([0 1 0]);
-campos([10 30 30]);
-% Lighting
-camlight;
-set(findall(gcf, 'Type', 'patch'), 'DiffuseStrength', 0.8)
-set(findall(gcf, 'Type', 'patch'), 'AmbientStrength', 0.6)
-% Legend
-try
-    l = legend([patch_a, patch_cv1, patch_cv2], 'Austenite', 'CV 1', 'CV 2');
-    set(l, 'FontSize', 14);
-catch
-end
-%
-% Some of the clipped patches are still going to be out of the bounding
-% box. Here we prune those.
-p = findall(gcf, 'Type', 'patch');
-for ii = 1:size(p(:))
-    p_centroid = mean(p(ii).Vertices, 1);
-    if(p_centroid(1) > bbox_half_width || p_centroid(2) > bbox_half_width || ...
-            p_centroid(3) > bbox_half_width || p_centroid(1) < -bbox_half_width || ...
-            p_centroid(2) < -bbox_half_width || p_centroid(3) < -bbox_half_width)
-        delete(p(ii));
+if(plot_flag > 0)
+    alpha(0.8);
+    % xlim([-bbox_half_width-1 bbox_half_width+1]); ylim([-bbox_half_width-1 bbox_half_width+1]); zlim([-bbox_half_width-1 bbox_half_width+1]);
+    xlim([-bbox_half_width bbox_half_width]); ylim([-bbox_half_width bbox_half_width]); zlim([-bbox_half_width bbox_half_width]);
+    grid off; box on; axis vis3d;
+    set(gca, 'XTick', []); set(gca, 'XTickLabel', []);
+    set(gca, 'YTick', []); set(gca, 'YTickLabel', []);
+    set(gca, 'ZTick', []); set(gca, 'ZTickLabel', []);
+    camproj('perspective')
+    camtarget([-1 1 1]);
+    camup([0 1 0]);
+    campos([10 30 30]);
+    % Lighting
+    camlight;
+    set(findall(gcf, 'Type', 'patch'), 'DiffuseStrength', 0.8)
+    set(findall(gcf, 'Type', 'patch'), 'AmbientStrength', 0.6)
+    % Legend
+    try
+        l = legend([patch_a, patch_cv1, patch_cv2], 'Austenite', 'CV 1', 'CV 2');
+        set(l, 'FontSize', 14);
+    catch
     end
-end
-%
-if(~isempty(foil_plane))
-    set(patch_foil, 'FaceAlpha', 0.3);
+    %
+    % Some of the clipped patches are still going to be out of the bounding
+    % box. Here we prune those.
+    p = findall(gcf, 'Type', 'patch');
+    for ii = 1:size(p(:))
+        p_centroid = mean(p(ii).Vertices, 1);
+        if(p_centroid(1) > bbox_half_width || p_centroid(2) > bbox_half_width || ...
+                p_centroid(3) > bbox_half_width || p_centroid(1) < -bbox_half_width || ...
+                p_centroid(2) < -bbox_half_width || p_centroid(3) < -bbox_half_width)
+            delete(p(ii));
+        end
+    end
+    %
+    if(~isempty(foil_plane))
+        set(patch_foil, 'FaceAlpha', 0.3);
+    end
 end
 %
 % Create a 3D grid and assign appropriate phase to the point (1 = CV1, 2 = Austenite, 3 = CV 2)
@@ -319,15 +355,17 @@ is_below_i = isBelowPlane(elements, i);
 element_phase(~is_below_i) = 2;
 %
 % Plot
-figure('Position', [100, 100, 600, 600]);
-scatter3(elements(:, 1), elements(:, 2), elements(:, 3), 36, element_phase, 'filled');
-colormap jet;
-axis equal; axis vis3d;
-camproj('perspective')
-camtarget([-1 1 1]);
-camup([0 1 0]);
-campos([10 30 30]);
-% All done. Now change grid bbox to what te user supplied.
-elements = elements * user_grid_bbox_ratio;
-elements = elements + repmat(user_grid_centroid, size(elements, 1), 1);
+if(plot_flag > 0)
+    figure('Position', [100, 100, 600, 600]);
+    scatter3(elements(:, 1), elements(:, 2), elements(:, 3), 36, element_phase, 'filled');
+    colormap jet;
+    axis equal; axis vis3d;
+    camproj('perspective')
+    camtarget([-1 1 1]);
+    camup([0 1 0]);
+    campos([10 30 30]);
+    % All done. Now change grid bbox to what te user supplied.
+    elements = elements * user_grid_bbox_ratio;
+    elements = elements + repmat(user_grid_centroid, size(elements, 1), 1);
+end
 end

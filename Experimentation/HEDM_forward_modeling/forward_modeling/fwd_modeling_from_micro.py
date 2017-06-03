@@ -154,7 +154,7 @@ class Microstructure:
         logger = self.logger
         cfg = self.cfg
 
-        if filetype is 'ms':
+        if filetype == 'ms':
             # Text file with microstructure data in 14 or 15 columns
             try:
                 ms_data = np.loadtxt(filename, dtype=None, comments='#', delimiter=',',
@@ -381,8 +381,8 @@ class Microstructure:
         calc_xyo = detector.angToXYO(angs[:, 0], angs[:, 1], angs[:, 2])
         calc_xyo = np.transpose(calc_xyo)
         # Write X, Y, omega data to a text file
-        template = "{0:12.2f}{1:12.2f}{2:12.2f}{3:12.2f}{4:12.2f}"
-        template_file = "{0:12.2f}{1:12.2f}{2:12.2f}{3:12.2f}{4:12.2f}\n"
+        template = "{0:12.2f}{1:12.2f}{2:12.4f}{3:12.4f}{4:12.4f}"
+        template_file = "{0:12.2f}{1:12.2f}{2:12.4f}{3:12.4f}{4:12.4f}\n"
 
         if output_txt:
             if output_file is not None:
@@ -445,11 +445,13 @@ class Microstructure:
             x = x / pixel_size[0] + 1024.0
             y = y / pixel_size[1] + 1024.0
 
-            closest_twotheta_index = (np.abs(structure_factor_data[:, 0] - (twotheta * 180.0 / np.pi))).argmin()
-            structure_factor = structure_factor_data[closest_twotheta_index, 1]
-            # o = angs[2]
-
-            #print h, k, l
+            try:
+                # Try determining the structure factor
+                closest_twotheta_index = (np.abs(structure_factor_data[:, 0] - (twotheta * 180.0 / np.pi))).argmin()
+                structure_factor = structure_factor_data[closest_twotheta_index, 1]
+            except:
+                # In case of an error, set the structure factor to 1.
+                structure_factor = 1.0
 
             if o < 0.:
                 o = o + 2.0*np.pi

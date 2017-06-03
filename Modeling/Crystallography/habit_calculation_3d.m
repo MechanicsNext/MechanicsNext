@@ -2,6 +2,23 @@ function [cb0, cm0, varargout] = habit_calculation_3d(U_matrix_cell_array)
 %% M-M and A-M interface calculation
 % Input type: E = Transformation strain is specified for variants
 %             U = Stretch tensor is specified for variants
+% Outputs:    cb0, cm0      = habit plane shear and normal in crystal frame
+%             twin_elements = twin shear and normal in crystal frame
+%             am_elements   = habit shear and normal in crystal frame
+%             corresponding_twin = number of twin corresponding to a habit
+%
+% twin_elements:
+% Columns 1, 2  = CV number 1, 2
+% Columns 3-5   = vector a
+% Columns 6-8   = vector n
+% Columns 9-17  = matrix Q (rotation) associated with CV 1
+% am_elements:
+% Columns 1, 2  = CV number 1, 2
+% Columns 3-5   = vector b
+% Columns 6-8   = vector m
+% Column 9      = CV 1 volume fraction
+% Columns 10-18 = matrix Q (rotation) associated with the habit plane
+%
 U = U_matrix_cell_array;
 %
 number_of_cv = size(U, 1);
@@ -138,7 +155,8 @@ for mt=1:size(twin_elements, 1)
         end
     end
 end
-
+disp(size(am_elements))
+disp(size(twin_elements))
 cb0 = am_elements(:, 3:5)';
 cm0 = am_elements(:, 6:8)';
 
