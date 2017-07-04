@@ -1,0 +1,86 @@
+### RUN BY "midas_tiltx Parameters_TiltX.txt"
+# Use these parameters from previous cal steps
+# Update tx each time after running this step
+Lsd                    1046929.020316670000                                          ### SAMPLE TO DETECTOR DISTANCE IN MICRONS (FIT2D OUTPUT SUFFICIENT)
+BC                     1029.203569922250 1027.473268714830                           ### BEAM CENTER (FIT2D X, FIT2D Y) IN PIXELS // WE ASSUME OB IS POINTING LEFT, UP IS POINTING UP WHEN IMAGE IS LOADED INTO FIT2D
+tx                     0                                                             ### TILT OF THE DETECTOR AROUND X RAY BEAM (ALONG ZL)
+ty                     0.240109719246                                               
+tz                     -0.014083164578                                                
+p0                     -0.000114210682                                                
+p1                     -0.000044212889                                               
+p2                     -0.000487309141                                               
+Wedge                  0                                                             
+RhoD                   200000                                                        ### DET DISTORTION PARAMETERSi
+# Spots info for Friedel pairs
+UseFriedelPairs        1                                                             ### USE FRIDEL PAIRS (INDEXING FASTER)
+SpotsWedge            1249.267301	125.797883  -137.428348                     ### SPOT 1 TO USE FOR WEDGE ANGLE DETERMINATION (X ON DETECTOR FIT2D, Y ON THE DETECTOR FIT2D, OMEGA)
+SpotsWedge            1250.816601	1931.102321  43.07878                       ### SPOT 2 TO USE FOR WEDGE ANGLE DETERMINATION (X ON DETECTOR FIT2D, Y ON THE DETECTOR FIT2D, OMEGA)
+SpotsTX               1172.475209	109.118041  -102.981482                     ### SPOT 1 TO USE FOR TILTZ ANGLE DETERMINATION (X ON DETECTOR FIT2D, Y ON THE DETECTOR FIT2D, OMEGA) IN INCREASING OMEGA
+SpotsTX               883.132269	1945.060959 -43.231082                      ### SPOT 2 TO USE FOR TILTZ ANGLE DETERMINATION (X ON DETECTOR FIT2D, Y ON THE DETECTOR FIT2D, OMEGA)
+SpotsTX               1171.906706	1945.965658  77.846335                      ### SPOT 3 TO USE FOR TILTZ ANGLE DETERMINATION (X ON DETECTOR FIT2D, Y ON THE DETECTOR FIT2D, OMEGA)
+SpotsTX               890.292633	108.256247   137.548646                     ### SPOT 4 TO USE FOR TILTZ ANGLE DETERMINATION (X ON DETECTOR FIT2D, Y ON THE DETECTOR FIT2D, OMEGA)
+#
+# Change frequently
+Wavelength             0.222921                                                      ### ANGSTROMS
+RawFolder              /FULL/PATH/TO/RAW/DATA/DIR/                                   ### DIRECTORY WHERE RAW DATA LIVE
+FileStem               ff                                                            ### FILESTEM BEFORE THE LAST UNDERSCORE "FILESTEM_XXXZZZ.geY"
+SeedFolder             /FULL/PATH/TO/CURRENT/DIR/                                    ### DIRECTORY WHERE ANALYSIS / OUTPUT LIVE
+Dark                   /FULL/PATH/TO/DARK/FILE/ff_00017.ge3                          ### DARK FILE FULL PATH 
+Padding                5                                                             ### "FILESTEM_XXXZZZ.geY" NUMBER OF X AND Z IN FILE NUMBER (6 IN THIS CASE)
+Ext                    .ge2                                                          ### FILE NAME EXTENSION
+StartNr                1                                                             ### LEAVE AS 1
+EndNr                  3600                                                          ### TOTAL NUMBER OF FRAMES FOR THE LAYER
+StartFileNrFirstLayer  25                                                            ### START FILE NUMBER (GE START FILE NUMBER) FOR THE LAYER (WITHOUT PADDING ZEROS)
+NrFilesPerSweep        15                                                            ### NUMBER OF FILES PER LAYER
+OmegaStep              0.10                                                          ### OMEGA STEP SIZE (+ IS CONVENTIONAL RIGHT HAND RULE ROTATION ABOUT APS +Y)
+OmegaFirstFile         -180                                                          ### OMEGA VALUE FOR THE FIRST FRAME IN THE FIRST FILE (RANGE IS ALWAY BETWEEN -180 TO +180)
+OmegaRange             -180 180                                                      ### OMEGA RANGE DEFINES WHERE TO LOOK FOR PEAKS (IF SHADOWING CREATE MULTIPLE OMEGA RANGES)
+OverAllRingToIndex     3                                                             ### RING FOR THE SEED ORIENTATIONS TO START FIBERSEARCH
+MinNrSpots             3                                                             ### Should match multiplicity of OverallRingToIndex
+RingsToExclude         1                                                             
+RingsToExclude         2                                                             
+RingThresh             3 300                                                          ### WHICH RING TO DO PEAK SEARCH ON
+MinEta                 6                                                             ### ANGLE AROUND THE Y THAT IS NOT CONSIDERED
+MinOmeSpotIDsToIndex   -180                                                          ### LIMITS FIBER SEARCH SPACE SO THAT REFLECTIONS FROM SAME GRAIN ARE NOT REVISITED EXTENSIVELY. MIN / MAX OME SHOULD COVER AT LEAST 90 FOR NOW.
+MaxOmeSpotIDsToIndex   180                                                           
+DoFit                  0                                                             ### USE SAMPLE TO REFINE THE EXPERIMENT
+# Change occassionally
+UpperBoundThreshold    12000                                                         ### SATURATION INTENSITY - UPPERBOUND THRESHOLD
+Completeness           0.6                                                           ### COMPLETENESS IN FABLE SENSE
+#
+# Change infrequently
+LatticeConstant        3.592326 3.592326 3.592326 90 90 90                           ### a, b, c, alpha, beta, gamma (ANGSTROM / DEG)
+SpaceGroup             225                                                           ### 1: BCC / 2: FCC / 3 : SIMPLE CUBIC
+Twins                  0                                                             
+TakeGrainMax           0                                                             
+DiscModel              0                                                             
+DiscArea               2250000                                                       
+MargABC                0.8                                                           
+MargABG                0.8                                                           
+BeamThickness          2                                                             
+GlobalPosition         1                                                             
+NumPhases              1                                                             
+PhaseNr                1                                                             
+ImTransOpt             0                                                             ### IMAGE TRANSFORMATION IN THE RIGHT ORDER
+BeamCurrent            1                                                             ### BEAM CURRENT (LEAVE AS 1 NOW)
+Width                  2000                                                          ### 1/2 * (TTH RANGE FOR PEAKSEARCH IN PIXELS)
+MaxRingRad             200000                                                        ### MAX RING RADIUS (MICRONS) TO LIMIT NUMBER OF RINGS TO SIMULATE / CALCULATION
+Rsample                2000                                                          ### RADIUS OF THE SAMPLE (LIMITS SEARCH SPACE IN X AND Z) MICRONS
+Hbeam                  2000                                                          ### HEIGHT OF THE BEAM (MICRONS) (LIMITS SEARCH SPACE IN Y)
+tolTilts               2                                                             ### TILT TOLERANCE IF DoFit = 1 (DEG)
+tolBC                  10                                                            ### BEAM CENTER TOLERANCE IF DoFit = 1 (PIX)
+tolLsd                 5000                                                          ### SAMPLE TO DETECTOR DISTANCE TOLERANCE IF DoFit = 1 (MICRONS)
+MarginRadius           800                                                           ### ALLOWABLE GRAIN SIZE MISMATCH (PERCENT)
+MarginRadial           800                                                           ### RADIAL TOLERANCE FROM EXPECTED SPOT POSITION (MICRONS)
+MarginEta              799                                                           ### ETA TOLERANCE FROM EXPECTED SPOT POSITION (MICRONS)
+NewType                1                                                             ### LEAVE AS IS
+BoxSize                -1000000 1000000 -1000000 1000000                             ### ACTIVE DETECTOR AREA AT THE OMEGA RANGE (MICRONS) (HORIZONTAL RANGE - NEGATIVE IN INBOARD / VERTICAL RANGE - NEGATIVE IS DOWN)
+StepSizePos            5                                                             ### GRID SIZE IN SAMPLE SPACE (MICRONS)
+StepSizeOrient         0.2                                                           ### FIBER STEP SIZE (DEG)
+MarginOme              0.5                                                           ### OMEGA TOLERANCE FROM EXPECTED SPOT POSITION (DEG)
+OmeBinSize             0.1                                                           ### LEAVE AS IS
+EtaBinSize             0.1                                                           ### LEAVE AS IS
+#
+# APS specific
+px                     200                                                           ### PIXEL SIZE IN MICRONS (ASSUME SQUARE PIXELS)
+NrPixels               2048                                                          ### NUMBER OF PIXELS IN DETECTOR IN A DIRECTION (ASSUME SQUARE DETECTOR)
