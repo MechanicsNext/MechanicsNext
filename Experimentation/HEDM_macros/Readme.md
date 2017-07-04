@@ -1,11 +1,7 @@
-<img src="https://github.com/MechanicsNext/MechanicsNext/blob/master/MeshnicsNext_Assets/mechanics_next_wordmark.png" width=64px>
-
-# MATLAB-based Tools for DIC Post-processing
-
-Currently work with the data generated using [NCORR](http://www.ncorr.com) software.
-
 
 ## Acknowledgement
+
+These macros are based on the original code courtesy of Darren Dale, Peter Ko, and Darren Pagan at the F2 beamline of Cornell High Energy Synchrotron Source.
 
 This application uses Open Source components. You can find the source code of their open source projects along with license information below. We acknowledge and are grateful to these developers for their contributions to open source.
 * [MTEX project](https://mtex-toolbox.github.io/)

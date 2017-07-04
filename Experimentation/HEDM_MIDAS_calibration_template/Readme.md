@@ -1,17 +1,19 @@
 <img src="https://github.com/MechanicsNext/MechanicsNext/blob/master/MeshnicsNext_Assets/mechanics_next_wordmark.png" width=64px>
 
-# MATLAB-based Tools for DIC Post-processing
+# MIDAS Detector Calibration Template
 
-Currently work with the data generated using [NCORR](http://www.ncorr.com) software.
-
+This is a template for calibrating far-field HEDM detector parameters for use with MIDAS. Modify these files and perform calibration based on the [instructions in the Wiki](https://github.com/MechanicsNext/MechanicsNext/wiki/MIDAS-Analysis-Workflow).
 
 ## Acknowledgement
+
+Our understanding of MIDAS calibration workflow is based on many helpful discussions with Hemant Sharma, Jun-sang Park, and Peter Kenesei (Advanced Photon Source, 1ID). Branden Kappes (Colorado School of Mines) prepared the first draft of this template.
 
 This application uses Open Source components. You can find the source code of their open source projects along with license information below. We acknowledge and are grateful to these developers for their contributions to open source.
 * [MTEX project](https://mtex-toolbox.github.io/)
 * [MATLAB diffraction tools](https://github.com/junspark/matlab_tools) by Jun-Sang Park
 * The [NCORR](http://ncorr.com/) digital image correlation package
 * The [heXRD](https://github.com/praxes/hexrd) high-energy X-ray diffraction package
+* The [MIDAS](https://www1.aps.anl.gov/science/scientific-software/midas) high-energy X-ray diffraction package
 
 ## License
 
