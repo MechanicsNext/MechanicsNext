@@ -27,6 +27,8 @@ This application uses Open Source components. You can find the source code of th
 * The [NCORR](http://ncorr.com/) digital image correlation package
 * The [heXRD](https://github.com/praxes/hexrd) high-energy X-ray diffraction package
 
+Software in this application was developed as part of a research project funded by the Department of Energy (Basic Energy Science) grant number DE-SC0010594. Work prior to 2014 was funded by the Department of Energy (Basic Energy Science) grant number SC-0001258. Work prior to 2012 was funded by the National Science Foundation grant number DMR 0907561.
+
 ## License
 
     This file is part of MechanicsNext.
