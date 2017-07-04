@@ -1,5 +1,7 @@
 <img src="https://github.com/MechanicsNext/MechanicsNext/blob/master/MechanicsNext_Assets/mechanics_next_wordmark.png" width=64px>
 
+[![DOI](https://zenodo.org/badge/74253793.svg)](https://zenodo.org/badge/latestdoi/74253793)
+
 # MechanicsNext
 
 Mechanics of Materials Using Numerical and Experimental Techniques.
@@ -28,6 +30,26 @@ This application uses Open Source components. You can find the source code of th
 * The [heXRD](https://github.com/praxes/hexrd) high-energy X-ray diffraction package
 
 Software in this application was developed as part of a research project funded by the Department of Energy (Basic Energy Science) grant number DE-SC0010594. Work prior to 2014 was funded by the Department of Energy (Basic Energy Science) grant number SC-0001258. Work prior to 2012 was funded by the National Science Foundation grant number DMR 0907561.
+
+## Citing
+
+This repository has an associated <abbr title="Document Object Identifier">DOI</abbr>: [10.5281/zenodo.822831](https://zenodo.org/record/822831). The respository can be cited using that DOI.
+
+Paranjape H.M., MechanicsNext: Mechanics of Materials Using Numerical and Experimental Techniques, (Accessed 07/01/2017), GitHub repository, URL: https://github.com/MechanicsNext/MechanicsNext , DOI:10.5281/zenodo.822831
+
+BibTex entry:
+
+```
+@misc{ParanjapeGH2017,
+  author = {Paranjape, H.M.},
+  title = {MechanicsNext: Mechanics of Materials Using Numerical and Experimental Techniques},
+  year = {2017},
+  publisher = {GitHub},
+  journal = {GitHub repository},
+  howpublished = {\url{https://github.com/MechanicsNext/MechanicsNext}},
+  doi = {10.5281/zenodo.822831}
+}
+```
 
 ## License
 
