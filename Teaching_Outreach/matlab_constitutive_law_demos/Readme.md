@@ -1,3 +1,5 @@
+<img src="https://github.com/MechanicsNext/MechanicsNext/blob/master/MechanicsNext_Assets/mechanics_next_wordmark.png" width=64px>
+
 # MATLAB Demonstrations for Inelastic Constitutive Laws
 
 1. cellular_automaton_slip_model.m: A 2D memonstration of deformation by slip using a cellular-automaton based model.
@@ -29,4 +31,4 @@ This application uses Open Source components. You can find the source code of th
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
+    along with MechanicsNext.  If not, see <http://www.gnu.org/licenses/>.

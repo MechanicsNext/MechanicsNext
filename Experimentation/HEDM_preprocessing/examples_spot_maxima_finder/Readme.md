@@ -1,4 +1,4 @@
-<img src="https://github.com/MechanicsNext/MechanicsNext/blob/master/MeshnicsNext_Assets/mechanics_next_wordmark.png" width=64px>
+<img src="https://github.com/MechanicsNext/MechanicsNext/blob/master/MechanicsNext_Assets/mechanics_next_wordmark.png" width=64px>
 # Far-field High-energy Diffraction Microscopy Spot Segmentation Utility: Examples
 
 These examples can be used as templates to run spot segmentation on other datasets.

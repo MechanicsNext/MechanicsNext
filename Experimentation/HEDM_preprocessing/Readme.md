@@ -1,4 +1,4 @@
-<img src="https://github.com/MechanicsNext/MechanicsNext/blob/master/MeshnicsNext_Assets/mechanics_next_wordmark.png" width=64px>
+<img src="https://github.com/MechanicsNext/MechanicsNext/blob/master/MechanicsNext_Assets/mechanics_next_wordmark.png" width=64px>
 
 # Far-field High-energy Diffraction Microscopy Spot Segmentation Utility
 
@@ -49,7 +49,7 @@ python MECHANICSNEXT_DIR/Experimentation/HEDM_preprocessing/spot_maxima_finder.p
 ## Basic algorithm
 
 <p align="center">
-  <img src="https://github.com/MechanicsNext/MechanicsNext/blob/master/MeshnicsNext_Assets/Experimentation_HEDM_preprocessing_algorithm.png" width=400px>
+  <img src="https://github.com/MechanicsNext/MechanicsNext/blob/master/MechanicsNext_Assets/Experimentation_HEDM_preprocessing_algorithm.png" width=400px>
 </p>
 
 
