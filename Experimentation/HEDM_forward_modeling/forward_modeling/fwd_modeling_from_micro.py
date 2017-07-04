@@ -462,22 +462,28 @@ class Microstructure:
                 y_op = np.round(y)
                 o_op = np.round((o - omega_start)/360.0*(omega_stop - omega_start)/omega_step)
                 # CHeck for sane indices
-                if x_op < 0:
-                    x_op = 0
+                if x_op <= 0:
+                    #x_op = 0
+                    continue
                 if x_op >= x_dim:
-                    x_op = x_dim - 1
-                if y_op < 0:
-                    y_op = 0
+                    #x_op = x_dim - 1
+                    continue
+                if y_op <= 0:
+                    #y_op = 0
+                    continue
                 if y_op >= y_dim:
-                    y_op = y_dim - 1
-                if o_op < 0:
-                    o_op = 0
+                    #y_op = y_dim - 1
+                    continue
+                if o_op <= 0:
+                    #o_op = 0
+                    continue
                 if o_op >= ((omega_stop - omega_start)/omega_step):
-                    o_op = (omega_stop - omega_start)/omega_step - 1
+                    #o_op = (omega_stop - omega_start)/omega_step - 1
+                    continue
                 # For now we are not calculating structure factor and realistic intensities for spots.
                 # Can we use heXRD crystallography functions? May be. Need to find a way of getting atom positions.
                 # Read in CIFs? haha fu*k no..
-                synth_array[o_op][y_op][x_op] = 6000 * int_scale_factor * structure_factor / 100.0
+                synth_array[int(o_op)][int(y_op)][int(x_op)] += 10 * int_scale_factor * structure_factor / 100.0
         # Scale intensities so that they are really between 0, 12000
         max_intensity = np.amax(synth_array)
         final_int_scale_factor = 12000. / max_intensity
